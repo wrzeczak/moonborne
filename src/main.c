@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <math.h>
 
+#define i_key int
+#define i_type ivec
+#include "stc/cvec.h"
+
 //------------------------------------------------------------------------------
 
 #define WIDTH 1600
@@ -11,6 +15,7 @@
 
 // tiles are scaled 4x
 #define TILE_SCALE 4
+#define TILE_SIZE 8
 
 // currently only using the top 9 groups from the tileset, will change in the future
 #define TILESET_SIZE 9
@@ -68,10 +73,31 @@ void render_start_menu(int framecount) {
 
 //------------------------------------------------------------------------------
 
-void render_game_world(int framecount/* Tile * map, Texture2D * tileset */) {
+void render_game_world(int framecount, ivec map, int width, int height, Texture2D * tileset) {
 	ClearBackground(BLACK);
-	// render_map(map, tileset);
+	render_map(map, width, height, tileset);
 }
+
+void render_tile(int x, int y, int tile_type, Texture2D * tileset) {
+	// DrawRectangle(x * 8 * TILE_SCALE, y * 8 * TILE_SCALE, 8 * TILE_SCALE, 8 * TILE_SCALE, BLUE);
+	DrawTextureEx(tileset[tile_type], (Vector2) { x * TILE_SCALE * TILE_SIZE, y * TILE_SCALE * TILE_SIZE }, 0.0f, TILE_SCALE, WHITE);
+	DrawText(TextFormat("%d", tile_type), x * 8 * TILE_SCALE + 10, y * 8 * TILE_SCALE + 10, 15, WHITE);
+}
+
+//! NOTE: the map size must be exactly width * height!
+void render_map(ivec map, int width, int height, Texture2D * tileset) {
+	int size = width * height;
+
+	for(int i = 0; i < size; i++) {
+		int x = i % width;
+		int y = (i - x) / height;
+
+		int t = *(ivec_at(&map, i));
+
+		render_tile(x, y, t, tileset);
+	}
+}
+
 
 //------------------------------------------------------------------------------
 
@@ -87,6 +113,31 @@ int main(void) {
 	int framecount = 0;
 
 	Image tileset_img = LoadImage("./tiles.png");
+
+	ivec map = { 0 };
+
+	for(int i = 0; i < 9; i++) {
+		ivec_push(&map, i);
+	}
+
+	Texture2D tileset[TILESET_SIZE];
+
+	for(int i = 0; i < TILESET_SIZE; i++) {
+		/* magic numbers, change these when changing tilesets */
+		int w = 3;
+		int h = 3;
+
+		int x = i % w;
+		int y = (i - x) / h;
+
+		Image chunk = ImageFromImage(tileset_img, (Rectangle) { x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE });
+
+		Texture2D tile = LoadTextureFromImage(chunk);
+
+		tileset[i] = tile;
+
+		UnloadImage(chunk);
+	}
 
 	while(!WindowShouldClose()) {
 
@@ -104,7 +155,7 @@ int main(void) {
 
 			// neat little way to do this i think, probably too small of a use case to be practical
 			switch (screen_state) {
-				case GAME_WORLD: render_game_world(framecount); break;
+				case GAME_WORLD: render_game_world(framecount, map, 3, 3, tileset); break;
 				default: render_start_menu(framecount);
 			}
 
