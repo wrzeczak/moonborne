@@ -33,32 +33,6 @@ Color frametime_fade(Color c, int framecount) {
 	return Fade(c, (float) shifted_framecount / ((float) TARGET_FPS * 2) + (0.6f));
 }
 
-//------------------------------------------------------------------------------
-
-typedef struct {
-	int tile_type;
-	Vector2 position;
-} Tile;
-
-// output[0] == a Tile of tile_type map size (mx * my + 1) which contains the map size in its position vector
-Tile * init_map(int mapx, int mapy, int * data) {
-	Tile map[mapx * mapy + 1];
-
-	map[0] = (Tile) { (mapx * mapy) + 1, (Vector2) { mapx, mapy }};
-
-	for(int y = 0; y < mapy; y++) {
-		for(int x = 0; x < mapx; x++) {
-			int type = data[y * mapx + x];
-
-			map[y * mapx + x + 1] = (Tile) { type, (Vector2) { x, y } };
-		}
-	}
-
-	return map;
-}
-
-//------------------------------------------------------------------------------
-
 // doesn't process any actual input, just says "you can press this key"
 void render_input_option(char * keyname, int framecount) {
 	int font_size = HEIGHT * 0.03f;
@@ -94,23 +68,9 @@ void render_start_menu(int framecount) {
 
 //------------------------------------------------------------------------------
 
-// this and everything relating to the map will be massively revamped, i'm just trying to get something working at this point
-// NOTE: map_size includes the two size members, ie. a map of size 16 should be 18 to include x and y
-void render_map(Tile * map, Texture2D * tileset) {
-	// the first two items of this list are the dimensions of the map
-	int mx = map[0].position.x;
-	int my = map[0].position.y;
-
-	for(int i = 1; i < (mx * my + 1); i++) {
-		Tile t = map[i];
-
-		DrawTextureEx(tileset[t.tile_type], (Vector2) { t.position.x * TILE_SCALE, t.position.y * TILE_SCALE }, 0.0f, TILE_SCALE, WHITE);
-	}
-}
-
-void render_game_world(int framecount, Tile * map, Texture2D * tileset) {
+void render_game_world(int framecount/* Tile * map, Texture2D * tileset */) {
 	ClearBackground(BLACK);
-	render_map(map, tileset);
+	// render_map(map, tileset);
 }
 
 //------------------------------------------------------------------------------
@@ -128,22 +88,6 @@ int main(void) {
 
 	Image tileset_img = LoadImage("./tiles.png");
 
-	Texture2D tileset[TILESET_SIZE] = { 0 };
-
-	// load in each tile as its own texture and put it in this array for later access
-	for(int i = 0; i < TILESET_SIZE; i++) {
-		int x = i % 3;
-		int y = (i - x) / 3;
-
-		Image sector = ImageFromImage(tileset_img, (Rectangle) { 8, 8, x * 8, y * 8 });
-		Texture2D tile = LoadTextureFromImage(sector);
-		UnloadImage(sector);
-
-		tileset[y * 3 + x] = tile;
-	}
-
-	Tile * map = init_map(3, 3, (int) { 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-
 	while(!WindowShouldClose()) {
 
 		// keep framecount between TARGET_FPS and 0, framecount is used for stuff like frametime_fade
@@ -160,7 +104,7 @@ int main(void) {
 
 			// neat little way to do this i think, probably too small of a use case to be practical
 			switch (screen_state) {
-				case GAME_WORLD: render_game_world(framecount, map, tileset); break;
+				case GAME_WORLD: render_game_world(framecount); break;
 				default: render_start_menu(framecount);
 			}
 
