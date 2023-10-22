@@ -5,4 +5,4 @@ Hundreds of years ago, in AD 1454, the first *surviving* moon-voyagers landed on
 ---
 
 Tileset -- [Crater Caverns](https://chimplement.itch.io/crater-caverns) by Chimplement
-Support Libraries -- [STC by Tyge Løvset](https://github.com/stclib/STC)
+Support Libraries -- [STC by Tyge Løvset](https://github.com/stclib/STC) and [TOMLC99 by CK Tan](https://github.com/cktan/tomlc99)
