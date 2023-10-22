@@ -40,6 +40,12 @@ Color frametime_fade(Color c, int framecount) {
 	return Fade(c, (float) shifted_framecount / ((float) TARGET_FPS * 2) + (0.6f));
 }
 
+void ff_debug_box(Color c, int framecount) {
+	DrawRectangle(10, HEIGHT - 50, 40, 40, frametime_fade(c, framecount));
+
+	DrawText("<---- ff_debug_box", 10 + 40 + 10, HEIGHT - 40, 20, RAYWHITE);
+}
+
 // doesn't process any actual input, just says "you can press this key"
 void render_input_option(char * keyname, int framecount) {
 	int font_size = HEIGHT * 0.03f;
@@ -57,7 +63,7 @@ void render_input_option(char * keyname, int framecount) {
 //------------------------------------------------------------------------------
 
 // render the title screen
-void render_start_menu(int framecount) {
+void render_start_menu(int framecount, bool render_debug_info) {
 	ClearBackground(BLACK);
 
 	int font_size = (0.1f) * HEIGHT;
@@ -68,16 +74,18 @@ void render_start_menu(int framecount) {
 
 	DrawText(title, (WIDTH - title_width) / 2, (int) (HEIGHT * 0.3f), font_size, RAYWHITE);
 
-	DrawRectangle(10, HEIGHT - 50, 40, 40, frametime_fade(RED, framecount));
+	if(render_debug_info) ff_debug_box(RED, framecount);
 
 	render_input_option("SPACE", framecount);
 }
 
 //------------------------------------------------------------------------------
 
-void render_game_world(int framecount, ivec map, int width, int height, Texture2D * tileset) {
+void render_game_world(int framecount, ivec map, int width, int height, Texture2D * tileset, bool render_debug_info) {
 	ClearBackground(BLACK);
 	render_map(map, width, height, tileset);
+
+	if(render_debug_info) ff_debug_box(BLUE, framecount);
 }
 
 void render_tile(int x, int y, int tile_type, Texture2D * tileset) {
@@ -101,6 +109,20 @@ void render_map(ivec map, int width, int height, Texture2D * tileset) {
 
 //------------------------------------------------------------------------------
 
+void render_general_debug_info(int framecount, int screen_state) {
+	DrawFPS(10, 10);
+	DrawText(TextFormat("SCREENSTATE %d", screen_state), 10, 100, 20, RAYWHITE);
+	DrawText(TextFormat("FRAMECOUNT %d", framecount), 10, 40, 20, RAYWHITE);
+	DrawText(TextFormat("deltaTIME %.4f", GetFrameTime()), 10, 70, 20, RAYWHITE);
+	DrawLine(WIDTH / 2, 0, WIDTH / 2, HEIGHT, RAYWHITE);
+	DrawLine(0, HEIGHT / 2, WIDTH, HEIGHT / 2, RAYWHITE);
+	DrawLine(WIDTH / 4, 0, WIDTH / 4, HEIGHT, YELLOW);
+	DrawLine(WIDTH * 0.75f, 0, WIDTH * 0.75f, HEIGHT, YELLOW);
+	DrawLine(0, HEIGHT / 4, WIDTH, HEIGHT / 4, YELLOW);
+	DrawLine(0, HEIGHT * 0.75f, WIDTH, HEIGHT * 0.75f, YELLOW);
+}
+
+//------------------------------------------------------------------------------
 typedef struct {
 	int width, height;
 	int size;
@@ -191,10 +213,12 @@ int main(void) {
 
 	Texture2D tileset[TILESET_SIZE];
 
+	/* magic numbers, change these when changing tilesets */
+	int w = 3;
+	int h = 3;
+
 	for(int i = 0; i < TILESET_SIZE; i++) {
-		/* magic numbers, change these when changing tilesets */
-		int w = 3;
-		int h = 3;
+
 
 		int x = i % w;
 		int y = (i - x) / h;
@@ -224,17 +248,13 @@ int main(void) {
 
 			// neat little way to do this i think, probably too small of a use case to be practical
 			switch (screen_state) {
-				case GAME_WORLD: render_game_world(framecount, lmt.data, lmt.width, lmt.height, tileset); break;
-				default: render_start_menu(framecount);
+				case GAME_WORLD: render_game_world(framecount, lmt.data, lmt.width, lmt.height, tileset, render_debug_info); break;
+				default: render_start_menu(framecount, render_debug_info);
 			}
 
 			// render debug info -- should probably separate into its own function but i want to be concurrent with other screen states
 			if(render_debug_info) {
-				DrawFPS(10, 10);
-				DrawFPS(10, 130);
-				DrawText(TextFormat("SCREENSTATE %d", screen_state), 10, 100, 20, RAYWHITE);
-				DrawText(TextFormat("FRAMECOUNT %d", framecount), 10, 40, 20, RAYWHITE);
-				DrawText(TextFormat("deltaTIME %.4f", GetFrameTime()), 10, 70, 20, RAYWHITE);
+				render_general_debug_info(framecount, screen_state);
 			}
 
 		EndDrawing();
