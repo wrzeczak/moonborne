@@ -1,1 +1,1 @@
-MOONBORNE.md
+./MOONBORNE.md
