@@ -1,4 +1,6 @@
 #include <raylib.h>
+#include <toml.h>
+
 #include <stdlib.h>
 #include <math.h>
 
@@ -98,6 +100,80 @@ void render_map(ivec map, int width, int height, Texture2D * tileset) {
 	}
 }
 
+//------------------------------------------------------------------------------
+
+typedef struct {
+	int width, height;
+	int size;
+	ivec data;
+} loadmap_return_t;
+
+static void loadmap_error(const char* msg, const char* msg1)
+{
+    fprintf(stderr, "ERROR: %s%s\n", msg, msg1?msg1:"");
+    exit(1);
+}
+
+loadmap_return_t load_map(char * path) {
+	FILE * fp;
+
+	fp = fopen(path, "r");
+
+	// TODO: error checking
+
+	char errbuf[200];
+
+	toml_table_t* conf = toml_parse_file(fp, errbuf, sizeof(errbuf));
+
+	fclose(fp);
+
+	if(!conf) loadmap_error("cannot parse -", errbuf);
+
+	// if fucked, error
+
+	toml_table_t* info_table = toml_table_in(conf, "info");
+
+	if(!info_table) loadmap_error("missing data table [info]", "");
+
+	toml_datum_t width_raw = toml_int_in(info_table, "width");
+	toml_datum_t height_raw = toml_int_in(info_table, "height");
+
+	if(!width_raw.ok) loadmap_error("cannot read info.width", "");
+	if(!height_raw.ok) loadmap_error("cannot read info.height", "");
+
+	int width = (int) width_raw.u.i;
+	int height = (int) height_raw.u.i;
+
+	printf("INFO: WIDTH: %d, HEIGHT: %d\n", width, height);
+
+	int size = width * height;
+
+	// if not there, error
+
+	ivec data = { 0 };
+
+	toml_table_t* data_table = toml_table_in(conf, "data");
+
+	toml_array_t* map = toml_array_in(data_table, "map");
+
+	for(int i = 0; i < size; i++) {
+		toml_datum_t bit = toml_int_at(map, i);
+		if(!bit.ok) break;
+
+		printf("%d -> %d\n", i, (int) bit.u.i);
+		ivec_push(&data, (int) bit.u.i);
+	}
+
+	toml_free(conf);
+
+	loadmap_return_t output = (loadmap_return_t) {
+		width, height,
+		size,
+		data
+	};
+
+	return output;
+}
 
 //------------------------------------------------------------------------------
 
@@ -114,11 +190,7 @@ int main(void) {
 
 	Image tileset_img = LoadImage("./tiles.png");
 
-	ivec map = { 0 };
-
-	for(int i = 0; i < 9; i++) {
-		ivec_push(&map, i);
-	}
+	loadmap_return_t lmt = load_map("./debug-map.toml");
 
 	Texture2D tileset[TILESET_SIZE];
 
@@ -155,7 +227,7 @@ int main(void) {
 
 			// neat little way to do this i think, probably too small of a use case to be practical
 			switch (screen_state) {
-				case GAME_WORLD: render_game_world(framecount, map, 3, 3, tileset); break;
+				case GAME_WORLD: render_game_world(framecount, lmt.data, lmt.width, lmt.height, tileset); break;
 				default: render_start_menu(framecount);
 			}
 
