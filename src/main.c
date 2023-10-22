@@ -16,7 +16,7 @@
 #define TARGET_FPS 75
 
 // tiles are scaled 4x
-#define TILE_SCALE 4
+#define TILE_SCALE 8
 #define TILE_SIZE 8
 
 // currently only using the top 9 groups from the tileset, will change in the future
@@ -83,7 +83,6 @@ void render_game_world(int framecount, ivec map, int width, int height, Texture2
 void render_tile(int x, int y, int tile_type, Texture2D * tileset) {
 	// DrawRectangle(x * 8 * TILE_SCALE, y * 8 * TILE_SCALE, 8 * TILE_SCALE, 8 * TILE_SCALE, BLUE);
 	DrawTextureEx(tileset[tile_type], (Vector2) { x * TILE_SCALE * TILE_SIZE, y * TILE_SCALE * TILE_SIZE }, 0.0f, TILE_SCALE, WHITE);
-	DrawText(TextFormat("%d", tile_type), x * 8 * TILE_SCALE + 10, y * 8 * TILE_SCALE + 10, 15, WHITE);
 }
 
 //! NOTE: the map size must be exactly width * height!
@@ -144,8 +143,6 @@ loadmap_return_t load_map(char * path) {
 	int width = (int) width_raw.u.i;
 	int height = (int) height_raw.u.i;
 
-	printf("INFO: WIDTH: %d, HEIGHT: %d\n", width, height);
-
 	int size = width * height;
 
 	// if not there, error
@@ -160,7 +157,6 @@ loadmap_return_t load_map(char * path) {
 		toml_datum_t bit = toml_int_at(map, i);
 		if(!bit.ok) break;
 
-		printf("%d -> %d\n", i, (int) bit.u.i);
 		ivec_push(&data, (int) bit.u.i);
 	}
 
@@ -172,6 +168,7 @@ loadmap_return_t load_map(char * path) {
 		data
 	};
 
+	printf("INFO: GAME: Map loaded succesfully! (%dx%d, %d tiles)\n", width, height, size);
 	return output;
 }
 
