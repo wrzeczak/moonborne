@@ -99,7 +99,7 @@ void render_map(ivec map, int width, int height, Texture2D * tileset, bool rende
 	}
 }
 
-void render_game_world(int framecount, ivec map, int width, int height, Texture2D * tileset, bool render_debug_info) {
+void render_game_world(int framecount, ivec map, loadmap_return_t lmt, loadtileset_return_t lts, bool render_debug_info) {
 	ClearBackground(BLACK);
 	render_map(map, width, height, tileset, render_debug_info);
 
@@ -194,6 +194,110 @@ loadmap_return_t load_map(char * path) {
 
 //------------------------------------------------------------------------------
 
+typedef struct {
+	int size;
+	ivec indicies;
+	Texture2D * data;
+} loadtileset_return_t;
+
+loadtileset_return_t load_tileset(char * path, ivec requested_indicies) {
+	FILE * fp;
+
+	fp = fopen(path, "r");
+
+	// TODO: error checking
+
+	char errbuf[200];
+
+	toml_table_t* conf = toml_parse_file(fp, errbuf, sizeof(errbuf));
+
+	fclose(fp);
+
+	if(!conf) loadmap_error("cannot parse -", errbuf);
+
+	// if fucked, error
+
+	toml_table_t* info_table = toml_table_in(conf, "info");
+
+	if(!info_table) loadmap_error("missing data table [info]", "");
+
+	toml_datum_t source_raw = toml_string_in(info_table, "source");
+	toml_datum_t block_size_raw = toml_int_in(info_table, "block_size");
+	toml_datum_t width_raw = toml_int_in(info_table, "width");
+	toml_datum_t height_raw = toml_int_in(info_table, "height");
+
+	char * source = source_raw.u.s;
+	int block_size = block_size_raw.u.i;
+	int width = width_raw.u.i;
+	int height = height_raw.u.i;
+
+	toml_table_t* data_table = toml_table_in(conf, "data");
+
+	toml_array_t* map = toml_array_in(data_table, "map");
+
+	ivec unfiltered_map = { 0 };
+
+	for(int i = 0; i < width * height; i++) {
+		toml_datum_t bit = toml_int_at(map, i);
+		if(!bit.ok) break;
+
+		ivec_push(&unfiltered_map, (int) bit.u.i);
+	}
+
+	ivec filtered_map = { 0 };
+
+	int total_requested = ivec_size(&requested_indicies);
+	for(int i = 0; i < total_requested; i++) {
+		int requested_index = *(ivec_at(&requested_indicies, i));
+
+		bool found_match = false;
+		for(int j = 0; j < width * height; j++) {
+			int test = *(ivec_at(&unfiltered_map));
+			if(test == requested_index) {
+				ivec_push(&filtered_map, requested_index);
+				found_match = true;
+			}
+		}
+
+		if(!found_match) printf("INFO: %s: error in map.data - requested index not found in tileset.\n", source);
+	}
+
+	if(total_requested != (int) ivec_size(&filtered_map)) printf("ERROR: %s: error in loading map - total requested != filtered map size.\n", source);
+
+	Texture2D[total_requested] data;
+
+	Image source_image = LoadImage(source);
+
+	for(int i = 0; i < total_requested; i++) {
+		int bit = *(ivec_at(&filtered_map, i));
+
+		int x = bit % width;
+		int y = (bit - x) / height;
+
+		Image chunk = LoadImageFromImage(source_image, (Rectangle) { x * block_size, y * block_size, block_size, block_size });
+
+		Texture2D texture_chunk = LoadTextureFromImage(chunk);
+
+		UnloadImage(chunk);
+
+		data[i] = texture_chunk;
+	}
+
+	UnloadImage(source_image);
+	free(source_raw.u.s);
+	toml_free(conf);
+
+	loadtileset_return_t output = (loadtileset_return_t) {
+		total_requested,
+		filtered_map,
+		data
+	};
+
+	return output;
+}
+
+//------------------------------------------------------------------------------
+
 int main(void) {
 	InitWindow(WIDTH, HEIGHT, "MOONBORNE");
 
@@ -208,28 +312,7 @@ int main(void) {
 	Image tileset_img = LoadImage("./tiles.png");
 
 	loadmap_return_t lmt = load_map("./debug-map.toml");
-
-	/* magic numbers, change these when changing tilesets */
-	int tileset_width = 6;
-	int tileset_height = 8;
-	int tileset_size = tileset_width * tileset_height;
-
-	Texture2D tileset[tileset_size];
-
-	for(int y = 0; y < tileset_height; y++) {
-		for(int x = 0; x < tileset_width; x++) {
-			int pos = (y * tileset_width) + x;
-
-			Image chunk = ImageFromImage(tileset_img, (Rectangle) { x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE });
-
-			Texture2D tile = LoadTextureFromImage(chunk);
-
-			if(pos < tileset_size) tileset[pos] = tile;
-			else printf("INFO: MAP: tileset segfault prevented at pos = %d, x = %d, y = %d\n", pos, x, y);
-
-			UnloadImage(chunk);
-		}
-	}
+	loadtileset_return_t lts = load_tileset("./tileset1.toml");
 
 	while(!WindowShouldClose()) {
 
@@ -248,7 +331,7 @@ int main(void) {
 
 			// neat little way to do this i think, probably too small of a use case to be practical
 			switch (screen_state) {
-				case GAME_WORLD: render_game_world(framecount, lmt.data, lmt.width, lmt.height, tileset, render_debug_info); break;
+				case GAME_WORLD: render_game_world(framecount, lmt, lts, render_debug_info); break;
 				default: render_start_menu(framecount, render_debug_info);
 			}
 
