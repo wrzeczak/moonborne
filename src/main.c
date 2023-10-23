@@ -19,9 +19,6 @@
 #define TILE_SCALE 8
 #define TILE_SIZE 8
 
-// currently only using the top 9 groups from the tileset, will change in the future
-#define TILESET_SIZE 9
-
 //------------------------------------------------------------------------------
 
 // screen-state enumeration
@@ -81,20 +78,15 @@ void render_start_menu(int framecount, bool render_debug_info) {
 
 //------------------------------------------------------------------------------
 
-void render_game_world(int framecount, ivec map, int width, int height, Texture2D * tileset, bool render_debug_info) {
-	ClearBackground(BLACK);
-	render_map(map, width, height, tileset);
-
-	if(render_debug_info) ff_debug_box(BLUE, framecount);
-}
-
-void render_tile(int x, int y, int tile_type, Texture2D * tileset) {
+void render_tile(int x, int y, int tile_type, Texture2D * tileset, bool render_debug_info) {
 	// DrawRectangle(x * 8 * TILE_SCALE, y * 8 * TILE_SCALE, 8 * TILE_SCALE, 8 * TILE_SCALE, BLUE);
-	DrawTextureEx(tileset[tile_type], (Vector2) { x * TILE_SCALE * TILE_SIZE, y * TILE_SCALE * TILE_SIZE }, 0.0f, TILE_SCALE, WHITE);
+	DrawTextureEx(tileset[tile_type], (Vector2) { x * TILE_SCALE * TILE_SIZE + (tile_type * 2), y * TILE_SCALE * TILE_SIZE + (tile_type * 2) }, (float) tile_type, TILE_SCALE, WHITE);
+
+	if(render_debug_info) DrawText(TextFormat("%d", tile_type), (x * TILE_SCALE * TILE_SIZE) + (TILE_SCALE * TILE_SIZE * 0.25), (y * TILE_SCALE * TILE_SIZE) + (TILE_SCALE * TILE_SIZE * 0.25), TILE_SCALE * TILE_SIZE * 0.5, RAYWHITE);
 }
 
 //! NOTE: the map size must be exactly width * height!
-void render_map(ivec map, int width, int height, Texture2D * tileset) {
+void render_map(ivec map, int width, int height, Texture2D * tileset, bool render_debug_info) {
 	int size = width * height;
 
 	for(int i = 0; i < size; i++) {
@@ -103,14 +95,20 @@ void render_map(ivec map, int width, int height, Texture2D * tileset) {
 
 		int t = *(ivec_at(&map, i));
 
-		render_tile(x, y, t, tileset);
+		render_tile(x + 10, y + 5, t, tileset, render_debug_info);
 	}
+}
+
+void render_game_world(int framecount, ivec map, int width, int height, Texture2D * tileset, bool render_debug_info) {
+	ClearBackground(BLACK);
+	render_map(map, width, height, tileset, render_debug_info);
+
+	if(render_debug_info) ff_debug_box(BLUE, framecount);
 }
 
 //------------------------------------------------------------------------------
 
 void render_general_debug_info(int framecount, int screen_state) {
-	DrawFPS(10, 10);
 	DrawText(TextFormat("SCREENSTATE %d", screen_state), 10, 100, 20, RAYWHITE);
 	DrawText(TextFormat("FRAMECOUNT %d", framecount), 10, 40, 20, RAYWHITE);
 	DrawText(TextFormat("deltaTIME %.4f", GetFrameTime()), 10, 70, 20, RAYWHITE);
@@ -211,25 +209,26 @@ int main(void) {
 
 	loadmap_return_t lmt = load_map("./debug-map.toml");
 
-	Texture2D tileset[TILESET_SIZE];
-
 	/* magic numbers, change these when changing tilesets */
-	int w = 3;
-	int h = 3;
+	int tileset_width = 6;
+	int tileset_height = 8;
+	int tileset_size = tileset_width * tileset_height;
 
-	for(int i = 0; i < TILESET_SIZE; i++) {
+	Texture2D tileset[tileset_size];
 
+	for(int y = 0; y < tileset_height; y++) {
+		for(int x = 0; x < tileset_width; x++) {
+			int pos = (y * tileset_width) + x;
 
-		int x = i % w;
-		int y = (i - x) / h;
+			Image chunk = ImageFromImage(tileset_img, (Rectangle) { x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE });
 
-		Image chunk = ImageFromImage(tileset_img, (Rectangle) { x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE });
+			Texture2D tile = LoadTextureFromImage(chunk);
 
-		Texture2D tile = LoadTextureFromImage(chunk);
+			if(pos < tileset_size) tileset[pos] = tile;
+			else printf("INFO: MAP: tileset segfault prevented at pos = %d, x = %d, y = %d\n", pos, x, y);
 
-		tileset[i] = tile;
-
-		UnloadImage(chunk);
+			UnloadImage(chunk);
+		}
 	}
 
 	while(!WindowShouldClose()) {
@@ -242,6 +241,7 @@ int main(void) {
 		if(IsKeyPressed(KEY_F9)) render_debug_info = !render_debug_info;
 
 		if(IsKeyPressed(KEY_SPACE) && screen_state == START_MENU) screen_state = GAME_WORLD;
+		if(IsKeyPressed(KEY_F1)) screen_state = START_MENU;
 
 		BeginDrawing();
 			ClearBackground(BLACK);
@@ -256,6 +256,8 @@ int main(void) {
 			if(render_debug_info) {
 				render_general_debug_info(framecount, screen_state);
 			}
+
+			DrawFPS(10, 10);
 
 		EndDrawing();
 	}
