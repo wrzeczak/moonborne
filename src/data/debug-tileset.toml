@@ -1,0 +1,10 @@
+[info]
+
+# in pixels
+tile_size = 8
+
+# how many tiles wide
+width = 3
+height = 3
+
+source = "tiles.png"
