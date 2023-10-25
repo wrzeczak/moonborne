@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <math.h>
 
+#define i_implement
+#include "mb_ivec.h"
+
 #include "mb_load.h"
 
 //------------------------------------------------------------------------------
@@ -133,6 +136,9 @@ int main(void) {
 
 	int framecount = 0;
 
+	loadmap_return_t lmt = load_map("./debug-map.toml");
+	printf("INFO: MAP: LOADED! Width: %d, Height: %d\n", lmt.width, lmt.height);
+
 	while(!WindowShouldClose()) {
 
 		// keep framecount between TARGET_FPS and 0, framecount is used for stuff like frametime_fade
@@ -144,10 +150,6 @@ int main(void) {
 
 		if(IsKeyPressed(KEY_SPACE) && screen_state == START_MENU) screen_state = GAME_WORLD;
 		if(IsKeyPressed(KEY_F1)) screen_state = START_MENU;
-
-		loadmap_return_t lmt = load_map("./debug_map.toml");
-
-		printf("INFO: MAP: LOADED! Width: %d, Height: %d\n", lmt.width, lmt.height);
 
 		BeginDrawing();
 			ClearBackground(BLACK);
