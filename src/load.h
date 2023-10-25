@@ -154,7 +154,7 @@ loadtile_return_t load_tile(char * path) {
 
 			Texture2D tile = LoadTextureFromImage(chunk);
 
-			// ExportImage(chunk, TextFormat("./data/imgs/image-%d-%d.png", x, y));
+			ExportImage(chunk, TextFormat("./data/imgs/image-%d-%d.png", x, y));
 			UnloadImage(chunk);
 
 			tileset[(y / tile_size) * width + (x / tile_size)] = tile;

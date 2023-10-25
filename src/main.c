@@ -21,7 +21,6 @@
 #define TARGET_FPS 75
 
 #define TILE_SCALE 8
-#define TILE_SIZE 8
 
 // screen-state enumeration
 enum {

@@ -13,7 +13,6 @@
 #define TARGET_FPS 75
 
 #define TILE_SCALE 8
-#define TILE_SIZE 8
 
 // screen-state enumeration
 enum {
@@ -90,15 +89,15 @@ void render_general_debug_info(int framecount, int screen_state) {
 
 //------------------------------------------------------------------------------
 
-void render_tile(int x, int y, int tile_type, Texture2D * tileset, bool render_debug_info) {
+void render_tile(int x, int y, int tile_size, Texture2D tile, int tile_id, bool render_debug_info) {
 	// DrawRectangle(x * 8 * TILE_SCALE, y * 8 * TILE_SCALE, 8 * TILE_SCALE, 8 * TILE_SCALE, BLUE);
-	DrawTextureEx(tileset[tile_type], (Vector2) { x * TILE_SCALE * TILE_SIZE, y * TILE_SCALE * TILE_SIZE }, 0.0f, TILE_SCALE, WHITE);
+	DrawTextureEx(tile, (Vector2) { x * TILE_SCALE * tile_size, y * TILE_SCALE * tile_size }, 0.0f, TILE_SCALE, WHITE);
 
-	if(render_debug_info) DrawText(TextFormat("%d", tile_type), (x * TILE_SCALE * TILE_SIZE) + (TILE_SCALE * TILE_SIZE * 0.25), (y * TILE_SCALE * TILE_SIZE) + (TILE_SCALE * TILE_SIZE * 0.25), TILE_SCALE * TILE_SIZE * 0.5, RAYWHITE);
+	if(render_debug_info) DrawText(TextFormat("%d", tile_id), (x * TILE_SCALE * tile_size) + (TILE_SCALE * tile_size * 0.25), (y * TILE_SCALE * tile_size) + (TILE_SCALE * tile_size * 0.25), TILE_SCALE * tile_size * 0.5, RAYWHITE);
 }
 
 //! NOTE: the map size must be exactly width * height!
-void render_map(loadmap_return_t lmt, Texture2D * tileset, bool render_debug_info) {
+void render_map(loadmap_return_t lmt, loadtile_return_t ltt, bool render_debug_info) {
 	int size = lmt.width * lmt.height;
 
 	for(int i = 0; i < size; i++) {
@@ -107,13 +106,15 @@ void render_map(loadmap_return_t lmt, Texture2D * tileset, bool render_debug_inf
 
 		int t = *(ivec_at(&(lmt.map), i));
 
-		render_tile(x, y, t, tileset, render_debug_info);
+		Texture2D tile = ltt.tileset[t];
+
+		render_tile(x, y, ltt.tile_size, tile, t, render_debug_info);
 	}
 }
 
 void render_game_world(int framecount, loadmap_return_t lmt, loadtile_return_t ltt, bool render_debug_info) {
 	ClearBackground(BLACK);
-	render_map(lmt, ltt.tileset, render_debug_info);
+	render_map(lmt, ltt, render_debug_info);
 
 	if(render_debug_info) ff_debug_box(BLUE, framecount);
 }
