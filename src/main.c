@@ -4,10 +4,10 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define i_implement
-#include "mb_ivec.h"
+#define i_implement // NOTE: "ivec.h" must be included before any other headers using ivec to prevent multiple inclusions, errors, etc.
+#include "ivec.h"
 
-#include "mb_load.h"
+#include "load.h"
 
 //------------------------------------------------------------------------------
 
@@ -136,8 +136,8 @@ int main(void) {
 
 	int framecount = 0;
 
-	loadmap_return_t lmt = load_map("./debug-map.toml");
-	printf("INFO: MAP: LOADED! Width: %d, Height: %d\n", lmt.width, lmt.height);
+	loadmap_return_t lmt = load_map("./data/debug-map.toml");
+	printf("INFO: MAP: Map loaded succesfully! WIDTH: %d, HEIGHT: %d, MAP SIZE: %d, REQ SIZE: %d\n", lmt.width, lmt.height, (int) ivec_size(&(lmt.map)), (int) ivec_size(&(lmt.req)));
 
 	while(!WindowShouldClose()) {
 

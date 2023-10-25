@@ -23,6 +23,8 @@ void loadmap_error(const char * msg, const char * errbuf) {
 	exit(1);
 }
 
+//TODO implement automatic generation of `req` -- map-creator should not have to define that!
+
 // takes a path to a toml file
 loadmap_return_t load_map(char * path) {
 	/*
@@ -58,8 +60,6 @@ loadmap_return_t load_map(char * path) {
 	int width = (int) width_raw.u.i;
 	int height = (int) height_raw.u.i;
 
-	printf("INFO: MAP: Loaded map info data WIDTH: %d, HEIGHT %d\n", width, height);
-
 	//--- data table ---
 	toml_table_t * data = toml_table_in(root, "data");
 	if(!data) loadmap_error("Missing [data] in map file!", "");
@@ -81,9 +81,6 @@ loadmap_return_t load_map(char * path) {
 	}
 
 	if(width * height != (int) ivec_size(&map)) loadmap_error("Given width, height do not match data.map size!", "");
-
-	printf("INFO: MAP: Loaded `map` from `map_raw`! LENGTH: %d\n", (int) ivec_size(&map));
-	printf("INFO: MAP: Loaded `req` from `req_raw`! LENGTH: %d\n", (int) ivec_size(&req));
 
 	// done with toml
 	toml_free(root);
