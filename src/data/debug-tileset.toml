@@ -1,10 +1,10 @@
 [info]
 
 # in pixels
-tile_size = 24
+tile_size = 8
 
 # how many tiles wide
-width = 1
-height = 1
+width = 3
+height = 3
 
 source = "tiles.png"

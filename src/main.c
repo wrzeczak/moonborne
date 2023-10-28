@@ -55,7 +55,7 @@ void render_map(ivec map, int width, int height, Texture2D * tileset, bool rende
 }
 
 void render_game_world(int framecount, ivec map, loadmap_return_t lmt, loadtileset_return_t lts, bool render_debug_info) {
-	ClearBackground(BLACK);
+ClearBackground(BLACK);
 	render_map(map, width, height, tileset, render_debug_info);
 
 	if(render_debug_info) ff_debug_box(BLUE, framecount);
@@ -77,10 +77,10 @@ int main(void) {
 	int framecount = 0;
 
 	loadmap_return_t lmt = load_map("./data/debug-map.toml");
-	printf("INFO: MAP: Map loaded succesfully! WIDTH: %d, HEIGHT: %d, MAP SIZE: %d, REQ SIZE: %d\n", lmt.width, lmt.height, (int) ivec_size(&(lmt.map)), (int) ivec_size(&(lmt.req)));
+	printf("INFO: MAP: Map loaded succesfully! [ w, h, ms, rs ] [ %d, %d, %d, %d ]\n", lmt.width, lmt.height, (int) ivec_size(&(lmt.map)), (int) ivec_size(&(lmt.req)));
 
 	loadtile_return_t ltt = load_tile("./data/debug-tileset.toml");
-	printf("INFO: TEXTURE: Tileset loaded succesfully!\n");
+	printf("INFO: TEXTURE: Tileset loaded succesfully! [ w, h, s ] [ %d, %d, %d ]\n", ltt.width, ltt.height, ltt.tile_size);
 
 	while(!WindowShouldClose()) {
 
@@ -100,7 +100,7 @@ int main(void) {
 			// neat little way to do this i think, probably too small of a use case to be practical
 			switch (screen_state) {
 				case GAME_WORLD: render_game_world(framecount, lmt, ltt, render_debug_info); break;
-				default: render_start_menu(framecount, render_debug_info);
+				default: render_start_menu(framecount, render_debug_info); break;
 			}
 
 			// render debug info -- should probably separate into its own function but i want to be concurrent with other screen states

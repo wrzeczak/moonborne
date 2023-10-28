@@ -23,6 +23,8 @@ enum {
 
 #endif
 
+#define SUPPORT_FILEFORMAT_PNG
+
 //------------------------------------------------------------------------------
 
 // utility function for making things lightly blink to attract the eye
