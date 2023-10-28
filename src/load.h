@@ -16,12 +16,13 @@
 
 typedef struct {
 	int width, height;
+	int map_size, req_size;
 	ivec map; // a 1-d array that when arranged w*h displays a grid of tiles
 	ivec req; // an unordered list of all tile ids used in this map
 } loadmap_return_t;
 
 void loadmap_error(const char * msg, const char * errbuf) {
-	fprintf(stderr, "INFO: MAP ERROR: %s%s\n", msg, errbuf ? errbuf : "");
+	fprintf(stderr, "INFO: ERROR: %s%s\n", msg, errbuf ? errbuf : "");
 	exit(1);
 }
 
@@ -72,14 +73,19 @@ loadmap_return_t load_map(char * path) {
 	toml_array_t * map_raw = toml_array_in(data, "map");
 	toml_array_t * req_raw = toml_array_in(data, "req");
 
-	for(int i = 0; i < width * height; i++) {
+	int map_size = toml_array_nelem(map_raw);
+	int req_size = toml_array_nelem(req_raw);
+
+	for(int i = 0; i < map_size; i++) {
 		toml_datum_t map_bit = toml_int_at(map_raw, i);
+		if(map_bit.ok) ivec_push(&map, map_bit.u.i);
+		else loadmap_error("Map data conversion (tmldt -> ivec) failed!", "");
+	}
+
+	for(int i = 0; i < req_size; i++) {
 		toml_datum_t req_bit = toml_int_at(req_raw, i);
-		if(!map_bit.ok) loadmap_error("Map data conversion (tmldt -> ivec) failed!", "");
-
-		ivec_push(&map, map_bit.u.i);
-
 		if(req_bit.ok) ivec_push(&req, req_bit.u.i);
+		else loadmap_error("Req data conversion (tmldt -> ivec) failed!", "");
 	}
 
 	if(width * height != (int) ivec_size(&map)) loadmap_error("Given width, height do not match data.map size!", "");
@@ -93,8 +99,13 @@ loadmap_return_t load_map(char * path) {
 	output.width = width;
 	output.height = height;
 
+	output.map_size = map_size;
+	output.req_size = req_size;
+
 	ivec_copy(&output.map, &map);
 	ivec_copy(&output.req, &req);
+
+
 
 	return output;
 }
@@ -133,6 +144,11 @@ loadtile_return_t load_tile(char * path) {
 	toml_datum_t width_raw = toml_int_in(info, "width");
 	toml_datum_t height_raw = toml_int_in(info, "height");
 	toml_datum_t source_path_raw = toml_string_in(info, "source");
+
+	if(!tile_size_raw.ok) loadmap_error("Couldn't read tileset.info.tile_size", "");
+	if(!width_raw.ok) loadmap_error("Couldn't read tileset.info.width", "");
+	if(!height_raw.ok) loadmap_error("Couldn't read tileset.info.height", "");
+	if(!source_path_raw.ok) loadmap_error("Couldn't read tileset.info.source", "");
 
 	int tile_size = tile_size_raw.u.i;
 	int width = width_raw.u.i;

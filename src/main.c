@@ -31,39 +31,7 @@ enum {
 
 #endif
 
-/*------------------------------------------------------------------------------
-
-void render_tile(int x, int y, int tile_type, Texture2D * tileset, bool render_debug_info) {
-	// DrawRectangle(x * 8 * TILE_SCALE, y * 8 * TILE_SCALE, 8 * TILE_SCALE, 8 * TILE_SCALE, BLUE);
-	DrawTextureEx(tileset[tile_type], (Vector2) { x * TILE_SCALE * TILE_SIZE + (tile_type * 2), y * TILE_SCALE * TILE_SIZE + (tile_type * 2) }, (float) tile_type, TILE_SCALE, WHITE);
-
-	if(render_debug_info) DrawText(TextFormat("%d", tile_type), (x * TILE_SCALE * TILE_SIZE) + (TILE_SCALE * TILE_SIZE * 0.25), (y * TILE_SCALE * TILE_SIZE) + (TILE_SCALE * TILE_SIZE * 0.25), TILE_SCALE * TILE_SIZE * 0.5, RAYWHITE);
-}
-
-//! NOTE: the map size must be exactly width * height!
-void render_map(ivec map, int width, int height, Texture2D * tileset, bool render_debug_info) {
-	int size = width * height;
-
-	for(int i = 0; i < size; i++) {
-		int x = i % width;
-		int y = (i - x) / height;
-
-		int t = *(ivec_at(&map, i));
-
-		render_tile(x + 10, y + 5, t, tileset, render_debug_info);
-	}
-}
-
-void render_game_world(int framecount, ivec map, loadmap_return_t lmt, loadtileset_return_t lts, bool render_debug_info) {
-ClearBackground(BLACK);
-	render_map(map, width, height, tileset, render_debug_info);
-
-	if(render_debug_info) ff_debug_box(BLUE, framecount);
-}
-
 //------------------------------------------------------------------------------
-
-*/
 
 int main(void) {
 	InitWindow(WIDTH, HEIGHT, "MOONBORNE");

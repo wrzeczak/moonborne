@@ -1,5 +1,5 @@
-#ifndef ivec_H_
-#define ivec_H_
+#ifndef IVEC_H_
+#define IVEC_H_
 
 #define i_type ivec
 #define i_val int
