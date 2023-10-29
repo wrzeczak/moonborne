@@ -10,6 +10,12 @@
 
 #include <raylib.h>
 
+#include <vector>
+#include <string>
+
+typedef std::vector<int> ivec;
+typedef std::vector<Texture> tvec;
+
 //------------------------------------------------------------------------------
 // LOADMAP FUNCTIONS
 //------------------------------------------------------------------------------
@@ -67,28 +73,28 @@ loadmap_return_t load_map(char * path) {
 	toml_table_t * data = toml_table_in(root, "data");
 	if(!data) loadmap_error("Missing [data] in map file!", "");
 
-	ivec map = { 0 };
-	ivec req = { 0 };
-
 	toml_array_t * map_raw = toml_array_in(data, "map");
 	toml_array_t * req_raw = toml_array_in(data, "req");
 
 	int map_size = toml_array_nelem(map_raw);
 	int req_size = toml_array_nelem(req_raw);
 
+	ivec map(map_size);
+	ivec req(req_size);
+
 	for(int i = 0; i < map_size; i++) {
 		toml_datum_t map_bit = toml_int_at(map_raw, i);
-		if(map_bit.ok) ivec_push(&map, map_bit.u.i);
+		if(map_bit.ok) map.push_back(map_bit.u.i);
 		else loadmap_error("Map data conversion (tmldt -> ivec) failed!", "");
 	}
 
 	for(int i = 0; i < req_size; i++) {
 		toml_datum_t req_bit = toml_int_at(req_raw, i);
-		if(req_bit.ok) ivec_push(&req, req_bit.u.i);
+		if(req_bit.ok) req.push_back(req_bit.u.i);
 		else loadmap_error("Req data conversion (tmldt -> ivec) failed!", "");
 	}
 
-	if(width * height != (int) ivec_size(&map)) loadmap_error("Given width, height do not match data.map size!", "");
+	if(width * height != (int) map.size()) loadmap_error("Given width, height do not match data.map size!", "");
 
 	// done with toml
 	toml_free(root);
@@ -102,10 +108,8 @@ loadmap_return_t load_map(char * path) {
 	output.map_size = map_size;
 	output.req_size = req_size;
 
-	ivec_copy(&output.map, &map);
-	ivec_copy(&output.req, &req);
-
-
+	output.map = map;
+	output.req = req;
 
 	return output;
 }
@@ -114,7 +118,7 @@ loadmap_return_t load_map(char * path) {
 
 typedef struct {
 	int tile_size, width, height;
-	Texture2D * tileset;
+	tvec tileset;
 } loadtile_return_t;
 
 // NOTE: takes the path to the tileset's toml file, NOT the source image
@@ -155,14 +159,16 @@ loadtile_return_t load_tile(char * path) {
 	int height = height_raw.u.i;
 
 	// TODO: don't use the raylib function here maybe? seems strange and odd
-	char * source_path = TextFormat("./data/%s", source_path_raw.u.s);
+	std::string source_path_str = "./data/";
+	source_path_str.append(source_path_raw.u.s);
+	const char * source_path = source_path_str.c_str();
 	toml_free(root);
 
 	//--------------------------------------------------------------------------
 
 	Image source = LoadImage(source_path);
 
-	Texture2D tileset[width * height];
+	tvec tileset(width * height);
 
 	for(int y = 0; y < (height * tile_size); y += tile_size) {
 		for(int x = 0; x < (width * tile_size); x += tile_size) {
@@ -170,7 +176,7 @@ loadtile_return_t load_tile(char * path) {
 
 			Texture2D tile = LoadTextureFromImage(chunk);
 
-			ExportImage(chunk, TextFormat("./data/imgs/image-%d-%d.png", x, y));
+			ExportImage(chunk, TextFormat((char *) "./data/imgs/image-%d-%d.png", x, y));
 			UnloadImage(chunk);
 
 			tileset[(y / tile_size) * width + (x / tile_size)] = tile;

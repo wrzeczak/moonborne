@@ -4,6 +4,12 @@
 
 #pragma once
 
+
+#include <vector>
+
+typedef std::vector<int> ivec;
+typedef std::vector<Texture> tvec;
+
 #ifndef CONSTS
 #define CONSTS
 
@@ -107,7 +113,7 @@ void render_map(loadmap_return_t lmt, loadtile_return_t ltt, bool render_debug_i
 		int x = i % lmt.width;
 		int y = (i - x) / lmt.height;
 
-		int t = *(ivec_at(&(lmt.map), i));
+		int t = lmt.map[i];
 
 		render_tile(x, y, t, ltt, render_debug_info);
 	}

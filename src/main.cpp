@@ -4,8 +4,9 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define i_implement // NOTE: "ivec.h" must be included before any other headers using ivec to prevent multiple inclusions, errors, etc.
-#include "ivec.h"
+#include <vector>
+
+typedef std::vector<int> ivec;
 
 #include "load.h"
 #include "rndr.h"
@@ -45,7 +46,7 @@ int main(void) {
 	int framecount = 0;
 
 	loadmap_return_t lmt = load_map("./data/debug-map.toml");
-	printf("INFO: MAP: Map loaded succesfully! [ w, h, ms, rs ] [ %d, %d, %d, %d ]\n", lmt.width, lmt.height, map.size(), req.size());
+	printf("INFO: MAP: Map loaded succesfully! [ w, h, ms, rs ] [ %d, %d, %d, %d ]\n", lmt.width, lmt.height, lmt.map.size(), lmt.req.size());
 
 	loadtile_return_t ltt = load_tile("./data/debug-tileset.toml");
 	printf("INFO: TEXTURE: Tileset loaded succesfully! [ w, h, s ] [ %d, %d, %d ]\n", ltt.width, ltt.height, ltt.tile_size);
@@ -85,4 +86,3 @@ int main(void) {
 
 	return 0;
 }
-
