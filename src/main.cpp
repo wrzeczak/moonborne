@@ -1,5 +1,5 @@
 #include <raylib.h>
-#include <toml.h>
+#include <toml.hpp>
 
 #include <stdlib.h>
 #include <math.h>
