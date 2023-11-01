@@ -4,8 +4,11 @@ A game in which you, and your fellow moon-dwarves, will mine, expand, and politi
 
 ---
 
-Tileset -- [Crater Caverns](https://chimplement.itch.io/crater-caverns) by Chimplement
-Support Libraries -- [Raylib](https://raylib.com) by Ramon Santamaria and [TOML11](https://github.com/ToruNiina/toml11) by Dr. Toru Niina
+**Tileset** -- [Crater Caverns](https://chimplement.itch.io/crater-caverns) by Chimplement
+
+**Support Libraries** -- [Raylib](https://raylib.com) by Ramon Santamaria and [TOML11](https://github.com/ToruNiina/toml11) by Dr. Toru Niina
+
+---
 
 To build for yourself, install those two libraries as instructed on their pages, nothing else should be required; after installing, enter `src/` and `make run`, which will compile and run the executable.
 
