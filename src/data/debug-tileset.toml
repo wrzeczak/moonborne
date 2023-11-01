@@ -4,7 +4,7 @@
 tile_size = 8
 
 # how many tiles wide
-width = 3
-height = 3
+width = 6
+height = 8
 
 source = "tiles.png"

@@ -84,9 +84,9 @@ void render_start_menu(int framecount, bool render_debug_info) {
 //------------------------------------------------------------------------------
 
 void render_general_debug_info(int framecount, int screen_state) {
-	DrawText(TextFormat("SCREENSTATE %d", screen_state), 10, 100, 20, RAYWHITE);
-	DrawText(TextFormat("FRAMECOUNT %d", framecount), 10, 40, 20, RAYWHITE);
-	DrawText(TextFormat("deltaTIME %.4f", GetFrameTime()), 10, 70, 20, RAYWHITE);
+	DrawText(TextFormat("SCREENSTATE %d", screen_state), (WIDTH - MeasureText(TextFormat("SCREENSTATE %d", screen_state), 20) - 10), 100, 20, RAYWHITE);
+	DrawText(TextFormat("FRAMECOUNT %d", framecount), (WIDTH - MeasureText(TextFormat("FRAMECOUNT %d", framecount), 20) - 10), 40, 20, RAYWHITE);
+	DrawText(TextFormat("deltaTIME %.4f", GetFrameTime()), (WIDTH - MeasureText(TextFormat("deltaTIME %.4f", GetFrameTime()), 20) - 10), 70, 20, RAYWHITE);
 	DrawLine(WIDTH / 2, 0, WIDTH / 2, HEIGHT, RAYWHITE);
 	DrawLine(0, HEIGHT / 2, WIDTH, HEIGHT / 2, RAYWHITE);
 	DrawLine(WIDTH / 4, 0, WIDTH / 4, HEIGHT, YELLOW);

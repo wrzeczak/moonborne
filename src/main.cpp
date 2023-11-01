@@ -48,7 +48,7 @@ int main(void) {
 	loadmap_return_t lmt = load_map("./data/debug-map.toml");
 	printf("INFO: MAP: Map loaded succesfully! [ w, h, ms, rs ] [ %d, %d, %d, %d ]\n", lmt.width, lmt.height, lmt.map.size(), lmt.req.size());
 
-	loadtile_return_t ltt = load_tile("./data/debug-tileset.toml");
+	loadtile_return_t ltt = load_tile("./data/debug-tileset.toml", lmt.req);
 	printf("INFO: TEXTURE: Tileset loaded succesfully! [ w, h, s ] [ %d, %d, %d ]\n", ltt.width, ltt.height, ltt.tile_size);
 
 	while(!WindowShouldClose()) {
@@ -77,7 +77,7 @@ int main(void) {
 				render_general_debug_info(framecount, screen_state);
 			}
 
-			DrawFPS(10, 10);
+			DrawText(TextFormat("%d FPS", GetFPS()), (WIDTH - MeasureText(TextFormat("%d FPS", GetFPS()), 20) - 10), 10, 20, GREEN);
 
 		EndDrawing();
 	}

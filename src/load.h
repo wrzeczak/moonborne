@@ -83,6 +83,8 @@ loadmap_return_t load_map(const char * path) {
 
 	int req_size = req.size();
 
+	if(req_size > 32) load_error("Too many unique tiles requested! LIMIT: 32, REQ_SIZE: ", std::to_string(req_size).c_str());
+
 	loadmap_return_t output = (loadmap_return_t) {
 		width, height,
 		map_size, req_size,
@@ -103,7 +105,7 @@ typedef struct {
 } loadtile_return_t;
 
 // takes a path to a toml file and outputs the map stored in that file
-loadtile_return_t load_tile(const char * path) {
+loadtile_return_t load_tile(const char * path, ivec req) {
 	/*
 	[info]
 	tile_size, width, height (int)
@@ -141,14 +143,15 @@ loadtile_return_t load_tile(const char * path) {
 
 	for(int y = 0; y < height; y++) {
 		for(int x = 0; x < width; x++) {
-			Image chunk = ImageFromImage(source, (Rectangle) { x * tile_size, y * tile_size, tile_size, tile_size });
+			if(std::find(req.begin(), req.end(), (y * width + x)) != req.end()) {
+				Image chunk = ImageFromImage(source, (Rectangle) { x * tile_size, y * tile_size, tile_size, tile_size });
 
-			Texture tile = LoadTextureFromImage(chunk);
+				Texture tile = LoadTextureFromImage(chunk);
 
-			// ExportImage(chunk, TextFormat((char *) "./data/imgs/image-%d-%d.png", x, y));
-			UnloadImage(chunk);
-
-			tileset[y * width + x] = tile;
+				// ExportImage(chunk, TextFormat((char *) "./data/imgs/image-%d-%d.png", x, y));
+				UnloadImage(chunk);
+				tileset[y * width + x] = tile;
+			}
 		}
 	}
 
