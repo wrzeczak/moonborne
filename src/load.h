@@ -146,10 +146,10 @@ loadtile_return_t load_tile(const char * path, loadmap_return_t lmt) {
 
 	//------------------------------------------------------------------------------
 
-	cvec coords(width * height); // NOTE: some of these values are empty because this only loads from req!
+	cvec coords(lmt.width * lmt.height); // NOTE: some of these values are empty because this only loads from req!
 
-	for(int i = 0; i < lmt.req.size(); i++) {
-		int t = lmt.req[i];
+	for(int i = 0; i < lmt.map.size(); i++) {
+		int t = lmt.map[i];
 
 		int u = t % width;
 		int v = (t - u) / height;
