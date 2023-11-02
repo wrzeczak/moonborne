@@ -100,20 +100,24 @@ void render_general_debug_info(int framecount, int screen_state) {
 // note: t is the requested tile id
 void render_tile(int x, int y, int t, loadtile_return_t ltt, bool render_debug_info) {
 	// DrawRectangle(x * 8 * TILE_SCALE, y * 8 * TILE_SCALE, 8 * TILE_SCALE, 8 * TILE_SCALE, BLUE);
-	DrawTextureEx(ltt.tileset[t], (Vector2) { x * TILE_SCALE * ltt.tile_size, y * TILE_SCALE * ltt.tile_size }, 0.0f, TILE_SCALE, WHITE);
+	// DrawTextureEx(ltt.tileset[t], (Vector2) { x * TILE_SCALE * ltt.tile_size, y * TILE_SCALE * ltt.tile_size }, 0.0f, TILE_SCALE, WHITE);
+	// DrawTextureRec(ltt.source, (Rectangle) { u * ltt.tile_size, v * ltt.tile_size, ltt.tile_size, ltt.tile_size }, (Vector2) { x * TILE_SCALE * ltt.tile_size, y * TILE_SCALE * ltt.tile_size }, WHITE);
+	Vector2 uv = ltt.coords[t];
+	Rectangle source = (Rectangle) { uv.x * ltt.tile_size, uv.y * ltt.tile_size, ltt.tile_size, ltt.tile_size };
+	Rectangle dest = (Rectangle) { x * ltt.tile_size * TILE_SCALE, y * ltt.tile_size * TILE_SCALE, ltt.tile_size * TILE_SCALE, ltt.tile_size * TILE_SCALE };
 
-	if(render_debug_info) DrawText(TextFormat("%d", t), (x * TILE_SCALE * ltt.tile_size) + (TILE_SCALE * ltt.tile_size * 0.25), (y * TILE_SCALE * ltt.tile_size) + (TILE_SCALE * ltt.tile_size * 0.25), TILE_SCALE * ltt.tile_size * 0.5, RAYWHITE);
+	DrawTexturePro(ltt.source, source, dest, (Vector2) { 0, 0 }, 0.0f, WHITE);
+
+	// if(render_debug_info) DrawText(TextFormat("%d", t), (x * TILE_SCALE * ltt.tile_size) + (TILE_SCALE * ltt.tile_size * 0.25), (y * TILE_SCALE * ltt.tile_size) + (TILE_SCALE * ltt.tile_size * 0.25), TILE_SCALE * ltt.tile_size * 0.5, RAYWHITE);
 }
 
 //! NOTE: the map size must be exactly width * height!
 void render_map(loadmap_return_t lmt, loadtile_return_t ltt, bool render_debug_info) {
-	int size = lmt.width * lmt.height;
-
-	for(int i = 0; i < size; i++) {
-		int x = i % lmt.width;
-		int y = (i - x) / lmt.height;
-
+	for(int i = 0; i < lmt.map.size(); i++) {
 		int t = lmt.map[i];
+
+		int x = i % lmt.width;
+		int y = (x - i) / lmt.height;
 
 		render_tile(x, y, t, ltt, render_debug_info);
 	}

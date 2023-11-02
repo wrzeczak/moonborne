@@ -14,8 +14,8 @@
 #include <string>
 #include <algorithm> // for std::find
 
-typedef std::vector<int> ivec;
-typedef std::vector<Texture> tvec;
+typedef std::vector<int> ivec;     // integer vector
+typedef std::vector<Vector2> cvec; // coordinate vector
 
 //------------------------------------------------------------------------------
 
@@ -101,11 +101,12 @@ loadmap_return_t load_map(const char * path) {
 
 typedef struct {
 	int tile_size, width, height; // width and height are the tile counts on each side
-	tvec tileset;
+	cvec coords; // each index of the map maps to a (u, v) coordinate pair in this list
+	Texture source;
 } loadtile_return_t;
 
 // takes a path to a toml file and outputs the map stored in that file
-loadtile_return_t load_tile(const char * path, ivec req) {
+loadtile_return_t load_tile(const char * path, loadmap_return_t lmt) {
 	/*
 	[info]
 	tile_size, width, height (int)
@@ -137,27 +138,29 @@ loadtile_return_t load_tile(const char * path, ivec req) {
 
 	//------------------------------------------------------------------------------
 
-	Image source = LoadImage(source_path);
+	Image source_image = LoadImage(source_path);
 
-	tvec tileset(width * height);
+	Texture source = LoadTextureFromImage(source_image);
 
-	for(int y = 0; y < height; y++) {
-		for(int x = 0; x < width; x++) {
-			if(std::find(req.begin(), req.end(), (y * width + x)) != req.end()) {
-				Image chunk = ImageFromImage(source, (Rectangle) { x * tile_size, y * tile_size, tile_size, tile_size });
+	UnloadImage(source_image);
 
-				Texture tile = LoadTextureFromImage(chunk);
+	//------------------------------------------------------------------------------
 
-				// ExportImage(chunk, TextFormat((char *) "./data/imgs/image-%d-%d.png", x, y));
-				UnloadImage(chunk);
-				tileset[y * width + x] = tile;
-			}
-		}
+	cvec coords(width * height); // NOTE: some of these values are empty because this only loads from req!
+
+	for(int i = 0; i < lmt.req.size(); i++) {
+		int t = lmt.req[i];
+
+		int u = t % width;
+		int v = (t - u) / height;
+
+		coords[t] = (Vector2) { u, v };
 	}
 
 	loadtile_return_t output = (loadtile_return_t) {
 		tile_size, width, height,
-		tileset
+		coords,
+		source
 	};
 
 	return output;
