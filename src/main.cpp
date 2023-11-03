@@ -48,8 +48,12 @@ int main(void) {
 	loadmap_return_t lmt = load_map("./data/debug-map.toml");
 	printf("INFO: MAP: Map loaded succesfully! [ w, h, ms, rs ] [ %d, %d, %d, %d ]\n", lmt.width, lmt.height, lmt.map.size(), lmt.req.size());
 
+	print_lmt(lmt);
+
 	loadtile_return_t ltt = load_tile("./data/debug-tileset.toml", lmt);
 	printf("INFO: TEXTURE: Source texture loaded succesfully! [ sw, sh, tw, th ] [ %d, %d, %d, %d ]\n", ltt.width, ltt.height, ltt.tile_size, ltt.tile_size);
+
+	print_ltt(ltt);
 
 	while(!WindowShouldClose()) {
 

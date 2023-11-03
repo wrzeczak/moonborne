@@ -95,6 +95,36 @@ loadmap_return_t load_map(const char * path) {
 	return output;
 }
 
+void print_lmt(loadmap_return_t lmt) {
+	printf("INFO: LMT: {\n");
+	printf("\twidth: %d, height: %d,\n", lmt.width, lmt.height);
+	printf("\tmap_size: %d, req_size: %d,\n", lmt.map_size, lmt.req_size);
+
+	printf("\tmap: {\n");
+
+	for(int y = 0; y < lmt.height; y++) {
+		printf("\t\t");
+		for(int x = 0; x < lmt.width; x++) {
+			int t = lmt.map[y * lmt.width + x];
+
+			if(t < 10) printf("%d  ", t);
+			else printf("%d ", t);
+		}
+		printf("\n");
+	}
+
+	printf("\t},\n");
+
+	printf("\treq: { ");
+	for(int i = 0; i < lmt.req.size(); i++) {
+		int t = lmt.req[i];
+		printf("%d ", t);
+	}
+
+	printf("}\n");
+	printf("}\n");
+}
+
 //------------------------------------------------------------------------------
 // LOADTILE and related functions
 //------------------------------------------------------------------------------
@@ -146,15 +176,15 @@ loadtile_return_t load_tile(const char * path, loadmap_return_t lmt) {
 
 	//------------------------------------------------------------------------------
 
-	cvec coords(lmt.width * lmt.height); // NOTE: some of these values are empty because this only loads from req!
+	cvec coords(width * height);
 
-	for(int i = 0; i < lmt.map.size(); i++) {
-		int t = lmt.map[i];
+	for(int i = 0; i < lmt.req.size(); i++) {
+		int t = lmt.req[i];
 
-		int u = t % width;
-		int v = (t - u) / height;
+		int x = (t % width) * tile_size;
+		int y = ((t - x) / height) * tile_size;
 
-		coords[t] = (Vector2) { u, v };
+		coords[t] = (Vector2) { x, y };
 	}
 
 	loadtile_return_t output = (loadtile_return_t) {
@@ -164,5 +194,26 @@ loadtile_return_t load_tile(const char * path, loadmap_return_t lmt) {
 	};
 
 	return output;
+}
+
+void print_ltt(loadtile_return_t ltt) {
+	printf("INFO: LTT: {\n");
+	printf("\twidth: %d, height: %d,\n", ltt.width, ltt.height);
+	printf("\ttile_size: %d,\n", ltt.tile_size);
+
+	printf("\tcoords: {\n");
+
+	for(int y = 0; y < ltt.height; y++) {
+		printf("\t\t");
+		for(int x = 0; x < ltt.width; x++) {
+			Vector2 uv = ltt.coords[y * ltt.width + x];
+
+			printf("{ %d, %d }  ", uv.x, uv.y);
+		}
+		printf("\n");
+	}
+
+	printf("\t}\n");
+	printf("}\n");
 }
 

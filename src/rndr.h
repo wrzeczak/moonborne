@@ -103,7 +103,7 @@ void render_tile(int x, int y, int t, loadtile_return_t ltt, bool render_debug_i
 	// DrawTextureEx(ltt.tileset[t], (Vector2) { x * TILE_SCALE * ltt.tile_size, y * TILE_SCALE * ltt.tile_size }, 0.0f, TILE_SCALE, WHITE);
 	// DrawTextureRec(ltt.source, (Rectangle) { u * ltt.tile_size, v * ltt.tile_size, ltt.tile_size, ltt.tile_size }, (Vector2) { x * TILE_SCALE * ltt.tile_size, y * TILE_SCALE * ltt.tile_size }, WHITE);
 	Vector2 uv = ltt.coords[t];
-	Rectangle source = (Rectangle) { uv.x * ltt.tile_size, uv.y * ltt.tile_size, ltt.tile_size, ltt.tile_size };
+	Rectangle source = (Rectangle) { uv.x, uv.y, ltt.tile_size, ltt.tile_size };
 	Rectangle dest = (Rectangle) { x * ltt.tile_size * TILE_SCALE, y * ltt.tile_size * TILE_SCALE, ltt.tile_size * TILE_SCALE, ltt.tile_size * TILE_SCALE };
 
 	DrawTexturePro(ltt.source, source, dest, (Vector2) { 0, 0 }, 0.0f, WHITE);
