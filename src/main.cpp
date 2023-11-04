@@ -50,11 +50,6 @@ int main(void) {
 
 	print_lmt(lmt);
 
-	loadtile_return_t ltt = load_tile("./data/debug-tileset.toml", lmt);
-	printf("INFO: TEXTURE: Source texture loaded succesfully! [ sw, sh, tw, th ] [ %d, %d, %d, %d ]\n", ltt.width, ltt.height, ltt.tile_size, ltt.tile_size);
-
-	print_ltt(ltt);
-
 	while(!WindowShouldClose()) {
 
 		// keep framecount between TARGET_FPS and 0, framecount is used for stuff like frametime_fade
@@ -72,7 +67,7 @@ int main(void) {
 
 			// neat little way to do this i think, probably too small of a use case to be practical
 			switch (screen_state) {
-				case GAME_WORLD: render_game_world(framecount, lmt, ltt, render_debug_info); break;
+				case GAME_WORLD: render_game_world(framecount, lmt, render_debug_info); break;
 				default: render_start_menu(framecount, render_debug_info); break;
 			}
 

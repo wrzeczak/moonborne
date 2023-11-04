@@ -98,34 +98,34 @@ void render_general_debug_info(int framecount, int screen_state) {
 //------------------------------------------------------------------------------
 
 // note: t is the requested tile id
-void render_tile(int x, int y, int t, loadtile_return_t ltt, bool render_debug_info) {
+void render_tile(int x, int y, int t, loadmap_return_t lmt, bool render_debug_info) {
 	// DrawRectangle(x * 8 * TILE_SCALE, y * 8 * TILE_SCALE, 8 * TILE_SCALE, 8 * TILE_SCALE, BLUE);
 	// DrawTextureEx(ltt.tileset[t], (Vector2) { x * TILE_SCALE * ltt.tile_size, y * TILE_SCALE * ltt.tile_size }, 0.0f, TILE_SCALE, WHITE);
 	// DrawTextureRec(ltt.source, (Rectangle) { u * ltt.tile_size, v * ltt.tile_size, ltt.tile_size, ltt.tile_size }, (Vector2) { x * TILE_SCALE * ltt.tile_size, y * TILE_SCALE * ltt.tile_size }, WHITE);
-	Vector2 uv = ltt.coords[t];
-	Rectangle source = (Rectangle) { uv.x, uv.y, ltt.tile_size, ltt.tile_size };
-	Rectangle dest = (Rectangle) { x * ltt.tile_size * TILE_SCALE, y * ltt.tile_size * TILE_SCALE, ltt.tile_size * TILE_SCALE, ltt.tile_size * TILE_SCALE };
+	Vector2 uv = lmt.coords[t];
+	Rectangle source = (Rectangle) { uv.x, uv.y, lmt.tile_size, lmt.tile_size };
+	Rectangle dest = (Rectangle) { x * lmt.tile_size * TILE_SCALE, y * lmt.tile_size * TILE_SCALE, lmt.tile_size * TILE_SCALE, lmt.tile_size * TILE_SCALE };
 
-	DrawTexturePro(ltt.source, source, dest, (Vector2) { 0, 0 }, 0.0f, WHITE);
+	DrawTexturePro(lmt.source, source, dest, (Vector2) { 0, 0 }, 0.0f, WHITE);
 
 	// if(render_debug_info) DrawText(TextFormat("%d", t), (x * TILE_SCALE * ltt.tile_size) + (TILE_SCALE * ltt.tile_size * 0.25), (y * TILE_SCALE * ltt.tile_size) + (TILE_SCALE * ltt.tile_size * 0.25), TILE_SCALE * ltt.tile_size * 0.5, RAYWHITE);
 }
 
 //! NOTE: the map size must be exactly width * height!
-void render_map(loadmap_return_t lmt, loadtile_return_t ltt, bool render_debug_info) {
+void render_map(loadmap_return_t lmt, bool render_debug_info) {
 	for(int i = 0; i < lmt.map.size(); i++) {
 		int t = lmt.map[i];
 
 		int x = i % lmt.width;
 		int y = (x - i) / lmt.height;
 
-		render_tile(x, y, t, ltt, render_debug_info);
+		render_tile(x, y, t, lmt, render_debug_info);
 	}
 }
 
-void render_game_world(int framecount, loadmap_return_t lmt, loadtile_return_t ltt, bool render_debug_info) {
+void render_game_world(int framecount, loadmap_return_t lmt, bool render_debug_info) {
 	ClearBackground(BLACK);
-	render_map(lmt, ltt, render_debug_info);
+	render_map(lmt, render_debug_info);
 
 	if(render_debug_info) ff_debug_box(BLUE, framecount);
 }
