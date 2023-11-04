@@ -49,10 +49,10 @@ void ff_debug_box(Color c, int framecount) {
 //------------------------------------------------------------------------------
 
 // doesn't process any actual input, just says "you can press this key"
-void render_input_option(char * keyname, int framecount) {
+void render_input_option(const char * keyname, int framecount) {
 	int font_size = HEIGHT * 0.03f;
 
-	char * left = "Press ";
+	const char * left = "Press ";
 
 	int length = MeasureText(left, font_size) + MeasureText(keyname, font_size);
 
@@ -70,7 +70,7 @@ void render_start_menu(int framecount, bool render_debug_info) {
 
 	int font_size = (0.1f) * HEIGHT;
 
-	char * title = "MOONBORNE";
+	const char * title = "MOONBORNE";
 
 	int title_width = MeasureText(title, font_size);
 
@@ -103,8 +103,8 @@ void render_tile(int x, int y, int t, loadmap_return_t lmt, bool render_debug_in
 	// DrawTextureEx(ltt.tileset[t], (Vector2) { x * TILE_SCALE * ltt.tile_size, y * TILE_SCALE * ltt.tile_size }, 0.0f, TILE_SCALE, WHITE);
 	// DrawTextureRec(ltt.source, (Rectangle) { u * ltt.tile_size, v * ltt.tile_size, ltt.tile_size, ltt.tile_size }, (Vector2) { x * TILE_SCALE * ltt.tile_size, y * TILE_SCALE * ltt.tile_size }, WHITE);
 	Vector2 uv = lmt.coords[t];
-	Rectangle source = (Rectangle) { uv.x, uv.y, lmt.tile_size, lmt.tile_size };
-	Rectangle dest = (Rectangle) { x * lmt.tile_size * TILE_SCALE, y * lmt.tile_size * TILE_SCALE, lmt.tile_size * TILE_SCALE, lmt.tile_size * TILE_SCALE };
+	Rectangle source = (Rectangle) { (float) uv.x, (float) uv.y, (float) lmt.tile_size, (float) lmt.tile_size };
+	Rectangle dest = (Rectangle) { (float) x * lmt.tile_size * TILE_SCALE, (float) y * lmt.tile_size * TILE_SCALE, (float) lmt.tile_size * TILE_SCALE, (float) lmt.tile_size * TILE_SCALE };
 
 	DrawTexturePro(lmt.source, source, dest, (Vector2) { 0, 0 }, 0.0f, WHITE);
 

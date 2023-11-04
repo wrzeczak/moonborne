@@ -42,7 +42,7 @@ void print_lmt(loadmap_return_t lmt);
 //------------------------------------------------------------------------------
 
 
-loadmap_return_t load_map(char * path) {
+loadmap_return_t load_map(const char * path) {
 	// TODO: when porting to windows: https://github.com/ToruNiina/toml11#decoding-a-toml-file, open file in binary mode to prevent fuckshit errors
 	FILE * fp = fopen(path, "r");
 
@@ -103,13 +103,20 @@ loadmap_return_t load_map(char * path) {
 
 	for(int y = 0; y < length; y++) {
 		for(int x = 0; x < girth; x++) {
-			Vector2 uv = { (float) (x * tile_size), (float) (y * tile_size) };
+			Vector2 uv = { (float) ((x % girth) * tile_size), (float) ((y % length) * tile_size) };
 
 			coords[y * girth + x] = uv;
-
-			printf("INFO: LOADMAP: U: %d, V: %d, X: %d, Y: %d\n", (int) uv.x, (int) uv.y, x, y);
 		}
 	}
+
+	//------------------------------------------------------------------------------
+
+	printf("INFO: LOADMAP: coords: { ");
+	for(int i = 0; i < coords.size(); i++) {
+		Vector2 uv = coords[i];
+		printf("{ %d, %d } ", uv.x, uv.y);
+	}
+	printf("}\n");
 
 	//------------------------------------------------------------------------------
 
@@ -173,7 +180,7 @@ void print_lmt(loadmap_return_t lmt) {
 	printf("\tcoords: { ");
 	for(int i = 0; i < lmt.coords.size(); i++) {
 		Vector2 uv = lmt.coords[i];
-		printf("{ %d, %d } ");
+		printf("{ %d, %d } ", uv.x, uv.y);
 	}
 
 	printf("}\n");

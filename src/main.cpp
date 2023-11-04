@@ -76,7 +76,7 @@ int main(void) {
 				render_general_debug_info(framecount, screen_state);
 			}
 
-			DrawText(TextFormat("%d FPS", GetFPS()), (WIDTH - MeasureText(TextFormat("%d FPS", GetFPS()), 20) - 10), 10, 20, GREEN);
+			DrawText(TextFormat("%03d FPS", GetFPS()), (WIDTH - MeasureText(TextFormat("%03d FPS", GetFPS()), 20) - 10), 10, 20, GREEN);
 
 		EndDrawing();
 	}
