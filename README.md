@@ -1,12 +1,8 @@
-# A Space Dwarf Mining Game
-
-A game in which you, and your fellow moon-dwarves, will mine, expand, and politic, all with the goal of re-uniting the Moon and repopulating the Earth.
+# A text-based political simulator.
 
 ---
 
-**Tileset** -- [Crater Caverns](https://chimplement.itch.io/crater-caverns) by Chimplement
-
-**Support Libraries** -- [Raylib](https://raylib.com) by Ramon Santamaria and [TOML11](https://github.com/ToruNiina/toml11) by Dr. Toru Niina
+**Support Libraries** -- [NotCurses](https://notcurses.com) by [Nick Black](https://github.com/dankamongmen) and [TOML11](https://github.com/ToruNiina/toml11) by Dr. Toru Niina
 
 ---
 
