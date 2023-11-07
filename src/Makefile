@@ -1,5 +1,5 @@
-run:
-	g++ *.cpp -g -o app -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 && ./app
-
 build:
-	g++ *.cpp -g -o app -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+	g++ main.cpp -ggdb -o app -lnotcurses
+
+run:
+	g++ main.cpp -ggdb -o app -lnotcurses && ./app
