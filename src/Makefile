@@ -1,5 +1,4 @@
 build:
-	g++ main.cpp -ggdb -o app -lnotcurses
-
+	g++ main.cpp -ggdb -o app
 run:
-	g++ main.cpp -ggdb -o app -lnotcurses && ./app
+	g++ main.cpp -ggdb -o app  && ./app
