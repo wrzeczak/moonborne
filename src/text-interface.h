@@ -28,9 +28,12 @@
 //------------------------------------------------------------------------------
 
 void clear(); // clears the screen, wrapped in a function so it can be portable
+void prompt(); // generic input prompt, might be configurable
 int screen_width(); // get the width of the terminal
 
 void start_screen(); // display the starting screen
+
+void print_daily_heading();
 
 void infobox_padded_print(const char * input, int infobox_width, char padding_char); // used for the person infobox, prints a formatted line
 void print_person(Person p, int align); // prints personal data in a nice format
@@ -42,11 +45,23 @@ void clear() {
 	system("clear");
 }
 
+void prompt() {
+	printf("?> ");
+}
+
 int screen_width() {
 	struct winsize w;
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
 
 	return w.ws_col;
+}
+
+//------------------------------------------------------------------------------
+
+void print_daily_heading() {
+	std::string crossbar(screen_width(), '=');
+
+	printf("%s\n%s\n%s\n", crossbar.c_str(), crossbar.c_str(), crossbar.c_str());
 }
 
 //------------------------------------------------------------------------------

@@ -40,6 +40,13 @@ init_return_t init() {
 
 //------------------------------------------------------------------------------
 
+// user commands
+enum {
+	NOOP = 0,
+	QUIT,
+	PROCEED
+};
+
 int main(void) {
 	init_return_t init_output = init();
 
@@ -49,6 +56,60 @@ int main(void) {
 	}
 
 	start_screen(init_output.start_screen_load_time);
+
+	bool game_should_quit = false;
+	bool game_should_proceed = false;
+
+	int day_counter = 0;
+
+	while(!game_should_quit) {
+		day_counter++;
+
+		game_should_proceed = false;
+
+		clear();
+
+		print_daily_heading();
+
+
+		while(!game_should_proceed) {
+			//------------------------------------------------------------------------------
+			prompt();
+			fflush(stdin);
+
+			char input_buffer[2048];
+			fgets(input_buffer, 2048, stdin);
+
+			int raw_command_length = strlen(input_buffer); // includes the '\n' from the input
+
+			char command[raw_command_length];
+
+			strncpy(command, input_buffer, raw_command_length - 1);
+
+			//------------------------------------------------------------------------------
+
+			int command_id = NOOP;
+			if(strcmp(command, "shutdown") == 0) {
+				command_id = QUIT;
+			} else if(strcmp(command, "proceed") == 0) {
+				command_id = PROCEED;
+			}
+
+			printf("COMMAND RECIEVED: %s, LENGTH: %d, OPCODE: %d\n", command, strlen(command), command_id);
+
+			//------------------------------------------------------------------------------
+
+			switch(command_id) {
+				case QUIT:
+					print_daily_heading();
+					// TODO: save procedures
+					exit(0);
+				case PROCEED:
+					game_should_proceed = true;
+				default: continue;
+			}
+		}
+	}
 
 	return 0;
 }
