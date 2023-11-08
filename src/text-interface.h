@@ -1,7 +1,7 @@
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------//
 // text-interface -- functions for dealing with the text interface and disp-  //
 // laying data to the player.                                                 //
-//------------------------------------------------------------------------------
+//----------------------------------------------------------------------------//
 
 #pragma once
 #include <stdio.h>
@@ -17,12 +17,17 @@
 
 #include "person.h"
 
+//------------------------------------------------------------------------------
+
 #define VERSION 0.01
+#define VERSION_STR "0.01"
+
+#define BOLD_ON "\e[1m"
+#define BOLD_OFF "\e[m"
 
 //------------------------------------------------------------------------------
 
 void clear(); // clears the screen, wrapped in a function so it can be portable
-
 int screen_width(); // get the width of the terminal
 
 void start_screen(); // display the starting screen
@@ -37,8 +42,6 @@ void clear() {
 	system("clear");
 }
 
-//------------------------------------------------------------------------------
-
 int screen_width() {
 	struct winsize w;
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
@@ -48,23 +51,20 @@ int screen_width() {
 
 //------------------------------------------------------------------------------
 
-void start_screen() {
+void start_screen(int load_time) {
 	clear();
 
 	int width = screen_width();
 
-	time_t startup_time = time(NULL);
-	struct tm * st_struct = localtime(&startup_time);
-
 	char title[width + 1]; // if we're printing anything longer, something has gone horribly wrong
 
-	snprintf(title, width, "MOONBORNE POLSIM -- version %d -- startup %d:%d", VERSION, st_struct->tm_hour, st_struct->tm_min);
+	snprintf(title, width, "Welcome to Moonborne Polsim -- Version %s ", VERSION_STR);
 
-	std::string title_padding((width - 3 - strlen(title)), '-');
+	std::string title_padding((width - 8 - strlen(title)), '=');
 
-	printf("- %s %s\n", title, title_padding.c_str());
+	printf("=#= " BOLD_ON "%s" BOLD_OFF " =#=%s\n", title, title_padding.c_str());
 
-	sleep(3);
+	sleep(load_time);
 }
 
 //------------------------------------------------------------------------------
@@ -74,6 +74,9 @@ enum {
 	CENTER,
 	RIGHT
 };
+
+//------------------------------------------------------------------------------
+
 
 // NOTE: `input` should be already formatted text eg. "AGE: 52" -- this does not do printf() stuff for you!
 void infobox_padded_print(const char * input, int infobox_width, int align, char padding_char = ' ') {
