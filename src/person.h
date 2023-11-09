@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <string>
+#include <string.h> // the joys of C++
 
 //------------------------------------------------------------------------------
 
@@ -18,15 +19,16 @@ typedef struct {
 
 //------------------------------------------------------------------------------
 
-Person create_person(char * name, int age);
+Person create_person(const char * name, int age);
 Person create_random_person();
 
 //------------------------------------------------------------------------------
 
-Person create_person(char * name, int age) {
+Person create_person(char * name, int name_length, int age) {
 	Person output;
 
 	output.name = name;
+
 	output.age = age;
 
 	return output;
@@ -35,10 +37,10 @@ Person create_person(char * name, int age) {
 //------------------------------------------------------------------------------
 
 Person create_random_person() {
-	char * name = (char *) "John Audie Smith";
+	char * name = (char*) "John Audie Smith";
 	int age = (rand() % 50) + 35;
 
-	return create_person(name, age);
+	return create_person(name, strlen(name), age);
 }
 
 //------------------------------------------------------------------------------

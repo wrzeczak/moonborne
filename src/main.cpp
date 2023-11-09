@@ -44,7 +44,8 @@ init_return_t init() {
 enum {
 	NOOP = 0,
 	QUIT,
-	PROCEED
+	PROCEED,
+	INFO
 };
 
 int main(void) {
@@ -62,6 +63,8 @@ int main(void) {
 
 	int day_counter = 0;
 
+	Person player = interactive_create_person();
+
 	while(!game_should_quit) {
 		day_counter++;
 
@@ -69,43 +72,39 @@ int main(void) {
 
 		clear();
 
-		print_daily_heading();
+		print_daily_heading(day_counter, player);
 
-
-		while(!game_should_proceed) {
+			while(!game_should_proceed) {
 			//------------------------------------------------------------------------------
+
 			prompt();
-			fflush(stdin);
 
-			char input_buffer[2048];
-			fgets(input_buffer, 2048, stdin);
-
-			int raw_command_length = strlen(input_buffer); // includes the '\n' from the input
-
-			char command[raw_command_length];
-
-			strncpy(command, input_buffer, raw_command_length - 1);
+			input_t command = input();
 
 			//------------------------------------------------------------------------------
 
-			int command_id = NOOP;
-			if(strcmp(command, "shutdown") == 0) {
-				command_id = QUIT;
-			} else if(strcmp(command, "proceed") == 0) {
-				command_id = PROCEED;
-			}
+			int command_id = NOOP; // default
+			if(strcmp(command.input, "shutdown") == 0) command_id = QUIT;
+			else if(strcmp(command.input, "proceed") == 0) command_id = PROCEED;
+			else if(strcmp(command.input, "info") == 0 || strcmp(command.input, "playerinfo") == 0) command_id = INFO;
 
-			printf("COMMAND RECIEVED: %s, LENGTH: %d, OPCODE: %d\n", command, strlen(command), command_id);
+			// printf("COMMAND RECIEVED: %s, LENGTH: %d, OPCODE: %d\n", command.input, command.length), command_id);
 
 			//------------------------------------------------------------------------------
 
 			switch(command_id) {
 				case QUIT:
-					print_daily_heading();
+					clear();
+					printf("Shutting down...\n");
 					// TODO: save procedures
+					printf("Goodbye!\n");
 					exit(0);
 				case PROCEED:
 					game_should_proceed = true;
+					break;
+				case INFO:
+					print_person(player);
+					break;
 				default: continue;
 			}
 		}
