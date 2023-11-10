@@ -1,114 +1,105 @@
 #include "person.h"
-#include "text-interface.h" // includes stdio.h, vector, string
-
-#include <toml.hpp>
+#include "render.h"
 
 //------------------------------------------------------------------------------
 
-typedef struct {
-	int error; // 0 if everything has gone swimmingly
+// init() functions
 
-	// config.toml options
-	int start_screen_load_time;
-} init_return_t;
-
-// init_return_t.error states
-enum {
-	INIT_SUCCESS = 0,
-	INIT_CONFIG_OPEN_FAILURE, // probably never used because toml.hpp has its own errors
-	INIT_CONFIG_READ_FAILURE
-};
-
-// TODO: as the scope of init() grows, add real error codes in place of true/false
-init_return_t init() {
-	srand(time(NULL));
-
-	std::string config_filepath = "./config/config.toml"; // only using std::string because toml.hpp requires... me no likey...
-
-	const toml::value root = toml::parse(config_filepath);
-
-	int start_screen_load_time = toml::find<int>(root, "engine", "start_screen_load_time");
-
-	init_return_t output = (init_return_t) {
-		INIT_SUCCESS,
-
-		start_screen_load_time
-	};
-
-	return output;
+bool init() {
+	visual_init();
+	return true;
 }
 
 //------------------------------------------------------------------------------
 
-// user commands
-enum {
-	NOOP = 0,
-	QUIT,
-	PROCEED,
-	INFO
-};
-
 int main(void) {
-	init_return_t init_output = init();
+	//------------------------------------------------------------------------------
 
-	if(init_output.error != INIT_SUCCESS) {
-		printf("ERROR: init() error! Consult the manual with the following error code: [ " BOLD_ON "%d" BOLD_OFF " ] for more info!", init_output.error);
-		return init_output.error;
-	}
+	// initialization
 
-	start_screen(init_output.start_screen_load_time);
+	init();
 
-	bool game_should_quit = false;
-	bool game_should_proceed = false;
+	/* SCREEN LAYOUT
+	#---------------------------#	Header will display constant, global information
+	|========== header =========|	such as date, basic player stats, and some cont-
+	|---------------------------|	ext sensitive information depending on state.
+	|=================|=========|
+	|=================|=========|	Info will display info either by request or auto.
+	|==== interact ===|== info =|
+	|=================|=========|	Interact will be where the player inputs infor-
+	|=================|=========|	mation and recieves direct responses, ie. dia-
+	#---------------------------#	logue, commands, etc.
+	*/
+
+	WINDOW * header;
+	WINDOW * info;
+	WINDOW * interact;
+
+	header = newwin(5, COLS, 0, 0);
+	wborder(header, '#', '#', '=', '=', '#', '#', '#', '#');
+	wrefresh(header);
+
+	info = newwin(LINES - 5, info_width(), 5, interact_width());
+	wborder(info, '|', ' ', ' ', ' ', '|', ' ', '|', ' ');
+	wrefresh(info);
+
+	interact = newwin(LINES - 5, interact_width(), 5, 0);
+	wborder(interact, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
+	wrefresh(interact);
+
+	//------------------------------------------------------------------------------
+
+	// variables
 
 	int day_counter = 0;
 
-	Person player = interactive_create_person();
+	bool game_should_close = false;
+	bool day_should_proceed = false;
 
-	while(!game_should_quit) {
+	Person player;
+
+	//------------------------------------------------------------------------------
+
+	// game loop
+
+	refresh();
+
+	/*
+	while(!game_should_close) {
 		day_counter++;
 
-		game_should_proceed = false;
+		day_should_proceed = false;
 
-		clear();
+		while(!day_should_proceed) {
+			// ...
+			getch();
+			refresh();
 
-		print_daily_heading(day_counter, player);
-
-			while(!game_should_proceed) {
-			//------------------------------------------------------------------------------
-
-			prompt();
-
-			input_t command = input();
-
-			//------------------------------------------------------------------------------
-
-			int command_id = NOOP; // default
-			if(strcmp(command.input, "shutdown") == 0) command_id = QUIT;
-			else if(strcmp(command.input, "proceed") == 0) command_id = PROCEED;
-			else if(strcmp(command.input, "info") == 0 || strcmp(command.input, "playerinfo") == 0) command_id = INFO;
-
-			// printf("COMMAND RECIEVED: %s, LENGTH: %d, OPCODE: %d\n", command.input, command.length), command_id);
-
-			//------------------------------------------------------------------------------
-
-			switch(command_id) {
-				case QUIT:
-					clear();
-					printf("Shutting down...\n");
-					// TODO: save procedures
-					printf("Goodbye!\n");
-					exit(0);
-				case PROCEED:
-					game_should_proceed = true;
-					break;
-				case INFO:
-					print_person(player);
-					break;
-				default: continue;
-			}
 		}
 	}
+	*/
 
+	wrefresh(interact);
+	wrefresh(info);
+	wrefresh(header);
+	refresh();
+
+	prompt(interact);
+
+	player = visual_create_person(header, info, interact);
+
+	getch();
+
+	//------------------------------------------------------------------------------
+
+	// de-init
+
+	//------------------------------------------------------------------------------
+
+	window_deinit(header);
+	window_deinit(info);
+	window_deinit(interact);
+
+	endwin();
 	return 0;
 }

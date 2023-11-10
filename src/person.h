@@ -6,25 +6,26 @@
 #pragma once
 #include <stdio.h> // used for debugging, not for player input/output
 #include <stdlib.h>
+#include <string.h> // the joys of C++
+
 #include <vector>
 #include <string>
-#include <string.h> // the joys of C++
 
 //------------------------------------------------------------------------------
 
 typedef struct {
-	char * name;
+	std::string name;
 	int age;
 } Person;
 
 //------------------------------------------------------------------------------
 
-Person create_person(const char * name, int age);
+Person create_person(std::string name, int age);
 Person create_random_person();
 
 //------------------------------------------------------------------------------
 
-Person create_person(char * name, int name_length, int age) {
+Person create_person(std::string name, int age) {
 	Person output;
 
 	output.name = name;
@@ -37,10 +38,10 @@ Person create_person(char * name, int name_length, int age) {
 //------------------------------------------------------------------------------
 
 Person create_random_person() {
-	char * name = (char*) "John Audie Smith";
+	std::string name = "John Audie Smith";
 	int age = (rand() % 50) + 35;
 
-	return create_person(name, strlen(name), age);
+	return create_person(name, age);
 }
 
 //------------------------------------------------------------------------------
