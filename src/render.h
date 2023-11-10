@@ -39,6 +39,8 @@ int info_width(); // return the width of the info window
 
 void prompt(WINDOW * interact); // display a little prompt message at the bottom of the interact window
 
+void vcp_print_attr(WINDOW * info, int height, const char * label, std::string value); // during vcp, print an attirbute to the info window
+std::string vcp_get_attr(WINDOW * interact, int height, const char * query_msg); // during vcp, get an attribute from the interact window's input
 Person visual_create_person(WINDOW * header, WINDOW * info, WINDOW * interact); // create a person using the TUI
 
 //------------------------------------------------------------------------------
@@ -79,7 +81,11 @@ void prompt(WINDOW * interact) {
 	std::string crossbar_padding(interact_width() - 2, '=');
 	std::string crossbar = '#' + crossbar_padding + '#';
 
+	std::string input_field_padding(interact_width() - 2, ' ');
+	std::string input_field = '#' + input_field_padding + '#';
+
 	mvwprintw(interact, height - 2, 0, crossbar.c_str());
+	mvwprintw(interact, height - 1, 0, input_field.c_str()); // clear the input field
 	mvwprintw(interact, height - 1, 0, "?>");
 	mvwprintw(interact, height, 0, crossbar.c_str());
 
@@ -90,6 +96,36 @@ void prompt(WINDOW * interact) {
 
 //------------------------------------------------------------------------------
 
+// during vcp, print an attirbute to the info window
+void vcp_print_attr(WINDOW * info, int height, const char * label, std::string value) {
+	wattron(info, A_BOLD);
+	mvwprintw(info, height, 2, "%s: ", label);
+	wattroff(info, A_BOLD);
+	mvwprintw(info, height, 4 + strlen(label), "%s", value.c_str());
+	wrefresh(info);
+}
+
+// during vcp, get an attribute from the interact window's input
+std::string vcp_get_attr(WINDOW * interact, int height, const char * query_msg) {
+	char input_buffer[1024];
+
+	mvwprintw(interact, height, 0, "- %s", query_msg);
+	wrefresh(interact);
+
+	prompt(interact);
+
+	echo();
+	mvwgetstr(interact, LINES - 7, 3, input_buffer);
+	noecho();
+
+	int input_len = strlen(input_buffer);
+	input_buffer[input_len] = '\0';
+	std::string input = input_buffer;
+
+	return input;
+}
+
+// create a person using the TUI
 Person visual_create_person(WINDOW * header, WINDOW * info, WINDOW * interact) {
 	Person output;
 
@@ -108,29 +144,34 @@ Person visual_create_person(WINDOW * header, WINDOW * info, WINDOW * interact) {
 
 	int height_iterator = 2;
 
-	char name_buffer[256];
+	std::string name = vcp_get_attr(interact, height_iterator, "Enter your character's name.");
+	vcp_print_attr(info, height_iterator, "NAME", name);
 
-	mvwprintw(interact, height_iterator, 0, "- Enter character name.");
-	wrefresh(interact);
+	height_iterator++;
 
-	prompt(interact);
+	__vcp_get_age:
+	std::string age_str = vcp_get_attr(interact, height_iterator, "How old is your character? [35-80]");
 
-	echo();
-	mvwgetstr(interact, LINES - 7, 3, name_buffer);
-	noecho();
+	int age;
+	try {
+		age = std::stoi(age_str);
+	} catch(const std::exception& e) {
+		goto __vcp_get_age;
+	}
 
-	int name_len = strlen(name_buffer);
-	name_buffer[name_len] = '\0';
-	std::string name = name_buffer;
-	output.name = name;
+	if(age < 35 || age > 80) {
+		mvwprintw(interact, LINES - 7, 3, "INCORRECT INPUT: Age was not within defined range, or was not a valid number!");
+		goto __vcp_get_age;
+	}
 
-	wattron(info, A_BOLD);
-	mvwprintw(info, height_iterator, 2, "NAME:");
-	wattroff(info, A_BOLD);
-	mvwprintw(info, height_iterator, 8, "%s", name.c_str());
-	wrefresh(info);
+	vcp_print_attr(info, height_iterator, "AGE", age_str);
+
+	height_iterator++;
 
 	getch();
+
+	output.name = name;
+	output.age = age;
 
 	return output;
 }
