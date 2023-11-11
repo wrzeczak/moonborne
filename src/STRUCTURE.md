@@ -53,3 +53,5 @@ LIBRARIES
 ncurses.h (C)
 toml11/toml.hpp (C++)
 ```
+
+Note again that as of now this project is Linux-only, I plan to port this to Windows and potentially Mac (I don't have a Mac to test on). You're also free to do it yourself, and I'll gladly work with you to get it ported wherever.
