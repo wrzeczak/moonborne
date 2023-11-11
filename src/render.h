@@ -38,10 +38,12 @@ int interact_width(); // return the width of the interact window
 int info_width(); // return the width of the info window
 
 void prompt(WINDOW * interact); // display a little prompt message at the bottom of the interact window
+void clear_prompt(WINDOW * interact); // clear the prompt box from the screen
 
-void vcp_print_attr(WINDOW * info, int height, const char * label, std::string value); // during vcp, print an attirbute to the info window
-std::string vcp_get_attr(WINDOW * interact, int height, const char * query_msg); // during vcp, get an attribute from the interact window's input
-Person visual_create_person(WINDOW * header, WINDOW * info, WINDOW * interact); // create a person using the TUI
+void interact_hline(WINDOW * interact, int height); // draw a horizontal line in the interact window
+
+void header_message(WINDOW * header, const char * title, const char * info); // display a message in the header
+//TODO: make aliases with std::string as well
 
 //------------------------------------------------------------------------------
 
@@ -94,85 +96,38 @@ void prompt(WINDOW * interact) {
 	wrefresh(interact);
 }
 
+void clear_prompt(WINDOW * interact) {
+	int height = LINES - 6;
+
+	std::string its_only_emptiness_on_the_inside(interact_width(), ' ');
+
+	mvwprintw(interact, height - 2, 0, its_only_emptiness_on_the_inside.c_str());
+	mvwprintw(interact, height - 1, 0, its_only_emptiness_on_the_inside.c_str());
+	mvwprintw(interact, height, 0, its_only_emptiness_on_the_inside.c_str());
+
+	wrefresh(interact);
+}
+
 //------------------------------------------------------------------------------
 
-// during vcp, print an attirbute to the info window
-void vcp_print_attr(WINDOW * info, int height, const char * label, std::string value) {
-	wattron(info, A_BOLD);
-	mvwprintw(info, height, 2, "%s: ", label);
-	wattroff(info, A_BOLD);
-	mvwprintw(info, height, 4 + strlen(label), "%s", value.c_str());
-	wrefresh(info);
-}
+// draw a horizontal line in the interact window
+void interact_hline(WINDOW * interact, int height) {
+	std::string line_padding(interact_width() - 2, '-');
+	std::string line = ' ' + line_padding + ' ';
 
-// during vcp, get an attribute from the interact window's input
-std::string vcp_get_attr(WINDOW * interact, int height, const char * query_msg) {
-	char input_buffer[1024];
-
-	mvwprintw(interact, height, 0, "- %s", query_msg);
+	mvwprintw(interact, height, 0, "%s", line.c_str());
 	wrefresh(interact);
-
-	prompt(interact);
-
-	echo();
-	mvwgetstr(interact, LINES - 7, 3, input_buffer);
-	noecho();
-
-	int input_len = strlen(input_buffer);
-	input_buffer[input_len] = '\0';
-	std::string input = input_buffer;
-
-	return input;
 }
 
-// create a person using the TUI
-Person visual_create_person(WINDOW * header, WINDOW * info, WINDOW * interact) {
-	Person output;
+//------------------------------------------------------------------------------
 
-	std::string default_output_name = "MISSINGNO";
-	int default_output_age = 127;
+// display a message in the header
+void header_message(WINDOW * header, const char * title, const char * info) {
+	std::string header_padding(COLS - 2, ' ');
+	std::string no_man_can_cure_my_illness_now_for_the_LORD_hath_forsaken_me = '#' + header_padding + '#';
 
-	output = (Person) { default_output_name, default_output_age };
-
-	//------------------------------------------------------------------------------
-
-	mvwprintw(header, 2, 2, "Character Creation -- Following the prompts in the interact window, add information to create your character!");
-
+	mvwprintw(header, 2, 0, "%s", no_man_can_cure_my_illness_now_for_the_LORD_hath_forsaken_me.c_str());
+	mvwprintw(header, 2, 2, "%s -- %s", title, info);
 	wrefresh(header);
-
-	//------------------------------------------------------------------------------
-
-	int height_iterator = 2;
-
-	std::string name = vcp_get_attr(interact, height_iterator, "Enter your character's name.");
-	vcp_print_attr(info, height_iterator, "NAME", name);
-
-	height_iterator++;
-
-	__vcp_get_age:
-	std::string age_str = vcp_get_attr(interact, height_iterator, "How old is your character? [35-80]");
-
-	int age;
-	try {
-		age = std::stoi(age_str);
-	} catch(const std::exception& e) {
-		goto __vcp_get_age;
-	}
-
-	if(age < 35 || age > 80) {
-		mvwprintw(interact, LINES - 7, 3, "INCORRECT INPUT: Age was not within defined range, or was not a valid number!");
-		goto __vcp_get_age;
-	}
-
-	vcp_print_attr(info, height_iterator, "AGE", age_str);
-
-	height_iterator++;
-
-	getch();
-
-	output.name = name;
-	output.age = age;
-
-	return output;
 }
 
