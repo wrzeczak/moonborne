@@ -5,20 +5,36 @@
 
 //------------------------------------------------------------------------------
 
-void vcp_print_attr(WINDOW * info, int height, const char * label, std::string value); // during vcp, print an attirbute to the info window
-std::string vcp_get_attr(WINDOW * interact, int height, const char * query_msg); // during vcp, get an attribute from the interact window's input
-float vcp_political_slider(WINDOW * interact, int height, const char * label); // display a slider which can be moved around by the player to get a float value between 0.0f and 1.0f
+void vcp_print_attr(WINDOW * info, int height, const char * label, std::string value); 		// during vcp, print an attirbute to the info window
+void vcp_print_attr(WINDOW * info, int height, const char * label, float value); 			// float overload
+std::string vcp_get_attr(WINDOW * interact, int height, const char * query_msg); 			// during vcp, get an attribute from the interact window's input
+float vcp_political_slider(WINDOW * interact, int height, const char * label); 				// display a slider which can be moved around by the player to get a float value between 0.0f and 1.0f
 
-Person visual_create_person(WINDOW * header, WINDOW * info, WINDOW * interact); // create a person using the TUI
+Person visual_create_person(WINDOW * header, WINDOW * info, WINDOW * interact); 			// create a person using the TUI
 
 //------------------------------------------------------------------------------
 
 // during vcp, print an attirbute to the info window
 void vcp_print_attr(WINDOW * info, int height, const char * label, std::string value) {
+	std::string clear(info_width() - 2, ' ');
+	mvwprintw(info, height, 2, "%s", clear.c_str());
+
 	wattron(info, A_BOLD);
 	mvwprintw(info, height, 2, "%s: ", label);
 	wattroff(info, A_BOLD);
 	mvwprintw(info, height, 4 + strlen(label), "%s", value.c_str());
+	wrefresh(info);
+}
+
+// during vcp, print an attirbute to the info window -- float overload
+void vcp_print_attr(WINDOW * info, int height, const char * label, float value) {
+	std::string clear(info_width() - 2, ' ');
+	mvwprintw(info, height, 2, "%s", clear.c_str());
+
+	wattron(info, A_BOLD);
+	mvwprintw(info, height, 2, "%s: ", label);
+	wattroff(info, A_BOLD);
+	mvwprintw(info, height, 4 + strlen(label), "%.2f", value);
 	wrefresh(info);
 }
 
@@ -50,13 +66,13 @@ float vcp_political_slider(WINDOW * interact, WINDOW * header, int height, const
 	wrefresh(interact);
 
 	bool slider_should_return = false;
-	int slider_value = 10; // slider operates on a scale of 20 characters, 10 gradations, 2 characters per gradation
+	int slider_value = 10; // slider operates on a scale of 20 characters, 20 gradations, 1 characters per gradation
 
 	std::string slider_padding(22, '-');
 	std::string slider_cover = '*' + slider_padding + '*';
 
 	mvwprintw(interact, height, 2, "%s", slider_cover.c_str());
-	mvwprintw(interact, height + 1, 2, "| ##########---------- |");
+	mvwprintw(interact, height + 1, 2, "| ##########---------- |  [ value: 50% ]");
 	mvwprintw(interact, height + 2, 2, "%s", slider_cover.c_str());
 
 	wrefresh(interact);
@@ -64,8 +80,8 @@ float vcp_political_slider(WINDOW * interact, WINDOW * header, int height, const
 	while(!slider_should_return) {
 		int ch = getch();
 
-		if((ch == KEY_LEFT || ch == (int) 'h') && slider_value > 0) slider_value -= 2;
-		if((ch == KEY_RIGHT || ch == (int) 'l') && slider_value < 20) slider_value += 2;
+		if((ch == KEY_LEFT || ch == (int) 'h') && slider_value > 0) slider_value--;
+		if((ch == KEY_RIGHT || ch == (int) 'l') && slider_value < 20) slider_value++;
 		if((ch == (int) '\n')) {
 			slider_should_return = true;
 			continue;
@@ -78,7 +94,7 @@ float vcp_political_slider(WINDOW * interact, WINDOW * header, int height, const
 		if(slider_value < 20) space = std::string(20 - slider_value, '-');
 		else space = "";
 
-		mvwprintw(interact, height + 1, 2, "| %s%s |", value.c_str(), space.c_str());
+		mvwprintw(interact, height + 1, 2, "| %s%s |  [ value: %02d% ]", value.c_str(), space.c_str(), slider_value * 5);
 
 		wrefresh(interact);
 	}
@@ -90,6 +106,8 @@ float vcp_political_slider(WINDOW * interact, WINDOW * header, int height, const
 	return value;
 }
 
+//------------------------------------------------------------------------------
+
 // create a person using the TUI
 Person visual_create_person(WINDOW * header, WINDOW * info, WINDOW * interact) {
 	Person output;
@@ -99,6 +117,7 @@ Person visual_create_person(WINDOW * header, WINDOW * info, WINDOW * interact) {
 
 	output = (Person) { default_output_name, default_output_age };
 
+	__vcp_if_error_return_to:
 	//------------------------------------------------------------------------------
 
 	mvwprintw(header, 2, 2, "Character Creation -- Following the prompts in the interact window, add information to create your character, press ENTER to proceed.");
@@ -119,6 +138,8 @@ Person visual_create_person(WINDOW * header, WINDOW * info, WINDOW * interact) {
 
 	height_iterator++;
 
+	//------------------------------------------------------------------------------
+
 	__vcp_get_age:
 	std::string age_str = vcp_get_attr(interact, height_iterator, "How old is your character? [35-80]");
 
@@ -137,14 +158,16 @@ Person visual_create_person(WINDOW * header, WINDOW * info, WINDOW * interact) {
 
 	clear_prompt(interact);
 
-	header_message(header, "PROCEED", "Press any key!");
-	mvwprintw(interact, height_iterator, 0, "# Not exactly a spry young buck anymore, are we %s...", name.first.c_str());
+	//------------------------------------------------------------------------------
 
+	header_message(header, "PROCEED", "Press any key!");
 	height_iterator++;
 	interact_hline(interact, height_iterator);
 	height_iterator++;
 
 	getch();
+
+	//------------------------------------------------------------------------------
 
 	vcp_print_attr(info, height_iterator, "FIRST", name.first);
 	height_iterator++;
@@ -165,6 +188,10 @@ Person visual_create_person(WINDOW * header, WINDOW * info, WINDOW * interact) {
 
 	getch();
 
+	//------------------------------------------------------------------------------
+
+	__vcp_get_politics:
+
 	height_iterator = 8;
 
 	float economic = vcp_political_slider(interact, header, height_iterator, "ECONOMIC", "EQUALITY");
@@ -174,18 +201,41 @@ Person visual_create_person(WINDOW * header, WINDOW * info, WINDOW * interact) {
 	float civil = vcp_political_slider(interact, header, height_iterator, "CIVIL", "LIBERTY");
 	height_iterator += 5;
 	float society = vcp_political_slider(interact, header, height_iterator, "SOCIETAL", "TRADITION");
-	height_iterator += 5;
 
 	getch();
 
-	height_iterator -= 15;
+	height_iterator = 13;
 
-	vcp_print_attr(info, height_iterator + 0, "ECONOMIC", std::to_string(economic));
-	vcp_print_attr(info, height_iterator + 2, "DIPLOMATIC", std::to_string(diplomatic));
-	vcp_print_attr(info, height_iterator + 4, "CIVIL", std::to_string(civil));
-	vcp_print_attr(info, height_iterator + 6, "SOCIETAL", std::to_string(society));
+	vcp_print_attr(info, height_iterator + 0, "ECONOMIC", economic);
+	vcp_print_attr(info, height_iterator + 2, "DIPLOMATIC", diplomatic);
+	vcp_print_attr(info, height_iterator + 4, "CIVIL", civil);
+	vcp_print_attr(info, height_iterator + 6, "SOCIETAL", society);
 
 	getch();
+
+	//------------------------------------------------------------------------------
+
+	height_iterator = 28;
+
+	header_message(header, "RE-INPUT", "Press SPACE to re-input, press any key to continue.");
+	mvwprintw(interact, height_iterator, 0, "- If you would like to re-input this data, please hit SPACE. Otherwise, hit any key to continue.");
+	wrefresh(interact);
+
+	int ch = getch();
+
+	if(ch == (int) ' ') {
+		wclear(interact);
+		wrefresh(interact);
+
+		wclear(info);
+		wborder(info, '|', ' ', ' ', ' ', '|', ' ', '|', ' ');
+		wrefresh(info);
+		height_iterator = 2;
+
+		goto __vcp_if_error_return_to;
+	}
+
+	//------------------------------------------------------------------------------
 
 	output.name = name;
 	output.age = age;

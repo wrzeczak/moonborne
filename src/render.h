@@ -112,8 +112,8 @@ void clear_prompt(WINDOW * interact) {
 
 // draw a horizontal line in the interact window
 void interact_hline(WINDOW * interact, int height) {
-	std::string line_padding(interact_width() - 2, '-');
-	std::string line = ' ' + line_padding + ' ';
+	std::string line_padding(interact_width() - 4, '-');
+	std::string line = "  " + line_padding + "  ";
 
 	mvwprintw(interact, height, 0, "%s", line.c_str());
 	wrefresh(interact);
