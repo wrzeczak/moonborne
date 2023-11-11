@@ -26,6 +26,14 @@ typedef struct {
 	char li;				// 'J'
 } name_t;
 
+// https://8values.github.io/ -- see POLITICS.md
+typedef struct {
+	float economic; 	// measured from the left -- equality score
+	float diplomatic; 	// measured from the left -- national score
+	float civil; 		// measured from the left -- liberty score
+	float society; 		// measured from the left -- tradition score
+} politics_t;
+
 name_t NAME_ERROR = (name_t) {
 	std::string("MISSINGNO"),
 	std::string("MISSINGNO"),
@@ -40,13 +48,14 @@ name_t NAME_ERROR = (name_t) {
 typedef struct {
 	name_t name;
 	int age;
+	politics_t pol;
 } Person;
 
 //------------------------------------------------------------------------------
 
 name_t process_name(std::string name); // turn a string ie. "John Jack Blount" into a `name_t`
 
-Person create_person(std::string name, int age);
+Person create_person(std::string name, politics_t pol, int age);
 
 Person create_random_person();
 
@@ -97,10 +106,11 @@ name_t process_name(std::string name) { //TODO: function error checking, current
 
 //------------------------------------------------------------------------------
 
-Person create_person(std::string name, int age) {
+Person create_person(std::string name, politics_t pol, int age) {
 	Person output;
 
 	output.name = process_name(name);
+	output.pol = pol;
 
 	output.age = age;
 
@@ -113,7 +123,14 @@ Person create_random_person() {
 	std::string name = "John Audie Smith";
 	int age = (rand() % 50) + 35;
 
-	return create_person(name, age);
+	politics_t pol = (politics_t) {
+		(float) (rand() % 100) / 100.0f,
+		(float) (rand() % 100) / 100.0f,
+		(float) (rand() % 100) / 100.0f,
+		(float) (rand() % 100) / 100.0f
+	};
+
+	return create_person(name, pol, age);
 }
 
 //------------------------------------------------------------------------------
